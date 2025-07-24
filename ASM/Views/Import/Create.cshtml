@@ -1,0 +1,101 @@
+﻿@model ASM.Models.ImportSlipViewModel
+
+@{
+    ViewData["Title"] = "Tạo Phiếu Nhập Kho";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h2 class="mb-0">@ViewData["Title"]</h2>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="All" class="alert alert-danger"></div>
+
+                <div class="mb-3 col-md-4">
+                    <label asp-for="ImportDate" class="form-label fw-semibold"></label>
+                    <input asp-for="ImportDate" class="form-control" type="datetime-local" />
+                </div>
+
+                <h4 class="mt-4">Chi tiết sản phẩm</h4>
+                <table class="table table-bordered" id="productDetailsTable">
+                    <thead>
+                        <tr>
+                            <th style="width:40%">Sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th>Giá nhập</th>
+                            <th style="width:5%"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dòng mẫu sẽ được clone bằng JS -->
+                    </tbody>
+                </table>
+                <button type="button" id="addProductBtn" class="btn btn-success mt-2"><i class="fa-solid fa-plus me-2"></i>Thêm sản phẩm</button>
+
+                <hr class="my-4" />
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save me-2"></i>Lưu Phiếu Nhập</button>
+                    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            let productIndex = 0;
+
+            function addProductRow() {
+                var newRow = `
+                    <tr>
+                        <td>
+                            <select name="Details[${productIndex}].ProductId" class="form-select product-select" required>
+                                <option value="">-- Chọn sản phẩm --</option>
+                                @foreach (var item in (SelectList)ViewBag.ProductList)
+                                {
+                                        <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" name="Details[${productIndex}].Quantity" class="form-control" min="1" required />
+                        </td>
+                        <td>
+                            <input type="number" name="Details[${productIndex}].ImportPrice" class="form-control" min="0.01" step="0.01" required />
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm remove-row-btn"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+                $('#productDetailsTable tbody').append(newRow);
+                productIndex++;
+            }
+
+            $('#addProductBtn').click(function () {
+                addProductRow();
+            });
+
+            // Xóa dòng
+            $('#productDetailsTable').on('click', '.remove-row-btn', function () {
+                $(this).closest('tr').remove();
+                // Cập nhật lại index sau khi xóa (quan trọng)
+                $('#productDetailsTable tbody tr').each(function(index, tr) {
+                    $(tr).find('select, input').each(function() {
+                        if (this.name) {
+                            this.name = this.name.replace(/\[\d+\]/, '[' + index + ']');
+                        }
+                    });
+                });
+                productIndex = $('#productDetailsTable tbody tr').length;
+            });
+
+            // Thêm một dòng mặc định khi tải trang
+            addProductRow();
+        });
+    </script>
+}

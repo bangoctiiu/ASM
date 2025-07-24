@@ -1,0 +1,195 @@
+﻿/* === CSS DÙNG CHUNG CHO TRANG AUTH (ĐĂNG NHẬP, ĐĂNG KÝ) === */
+.auth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 90vh;
+    background-color: #f4f7f6;
+    padding: 2rem 1rem;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 800px; /* Tăng chiều rộng để vừa 2 cột */
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-card-header {
+    background-color: #f8f9fa;
+    padding: 2rem 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+    .auth-card-header h2 {
+        font-weight: 700;
+        color: #343a40;
+    }
+
+.auth-card-body {
+    padding: 2.5rem;
+}
+
+/* Tùy chỉnh floating label của Bootstrap */
+.form-floating > .form-control {
+    height: calc(3.5rem + 2px);
+    padding: 1rem 0.75rem;
+}
+
+.form-floating > label {
+    padding: 1rem 0.75rem;
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    font-size: 0.75rem;
+}
+
+.btn-primary {
+    padding: 0.85rem;
+    font-size: 1rem;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+    .btn-primary:hover {
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    }
+
+.form-check-label {
+    font-size: 0.9rem;
+}
+
+a {
+    color: #007bff;
+    transition: color 0.2s;
+}
+
+    a:hover {
+        color: #0056b3;
+    }
+
+
+/ /* 2. CSS cho Layout (Thêm vào site.css) */
+/* === LAYOUT & SIDEBAR STYLES === */
+:root {
+    --sidebar-width: 250px;
+    --sidebar-bg: #2c3e50; /* Màu xanh đen hải quân */
+    --sidebar-link-color: rgba(255, 255, 255, 0.7);
+    --sidebar-link-hover-color: #ffffff;
+    --sidebar-link-active-bg: #3498db; /* Màu xanh dương sáng */
+    --sidebar-accent-color: #f1c40f; /* Màu vàng cho điểm nhấn */
+}
+
+body {
+    overflow-x: hidden;
+}
+
+#wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar-wrapper {
+    width: var(--sidebar-width);
+    min-height: 100vh;
+    background-color: var(--sidebar-bg);
+    margin-left: 0;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+#wrapper.toggled .sidebar-wrapper {
+    margin-left: calc(-1 * var(--sidebar-width));
+}
+
+.sidebar-heading {
+    padding: 1.2rem 1.25rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.sidebar-heading-small {
+    padding: 0.8rem 1.25rem 0.2rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.sidebar-divider {
+    margin: 1rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.list-group-item {
+    border: none;
+    padding: 1rem 1.25rem;
+    color: var(--sidebar-link-color) !important; /* Quan trọng để ghi đè bootstrap */
+    background-color: transparent !important;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.list-group-item-action:hover,
+.list-group-item-action:focus {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--sidebar-link-hover-color) !important;
+    text-decoration: none;
+}
+
+.list-group-item.active {
+    background-color: var(--sidebar-link-active-bg) !important;
+    color: #fff !important;
+    font-weight: 500;
+    border-left: 4px solid var(--sidebar-accent-color);
+}
+
+#page-content-wrapper {
+    flex: 1;
+    min-width: 0;
+    background-color: #f4f7f6; /* Màu nền chính sáng hơn */
+    display: flex;
+    flex-direction: column;
+}
+
+    #page-content-wrapper main {
+        flex-grow: 1;
+    }
+
+/* Responsive Styles */
+@media (max-width: 767.98px) {
+    .sidebar-wrapper {
+        margin-left: calc(-1 * var(--sidebar-width));
+    }
+
+    #wrapper.toggled .sidebar-wrapper {
+        margin-left: 0;
+    }
+}
+/* === CSS CHO LAYOUT CHUNG === */
+main {
+    padding-top: 70px; /* Khoảng cách cho header fixed-top */
+    min-height: calc(100vh - 56px); /* Chiều cao tối thiểu để đẩy footer xuống */
+    background-color: #f8f9fa;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}

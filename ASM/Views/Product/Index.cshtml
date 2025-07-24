@@ -1,0 +1,102 @@
+﻿@model ASM.Models.ProductIndexViewModel
+
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>@ViewData["Title"]</h1>
+        <a asp-action="Create" class="btn btn-primary"><i class="fa-solid fa-plus me-2"></i>Tạo sản phẩm mới</a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label fw-semibold">Tìm theo tên</label>
+                    <input type="text" name="searchString" value="@Model.SearchString" class="form-control" placeholder="Nhập tên sản phẩm...">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Lọc theo danh mục</label>
+                    <select name="categoryId" asp-items="@Model.Categories" class="form-select">
+                        <option value="">Tất cả danh mục</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-info w-100"><i class="fa-solid fa-search me-2"></i>Tìm kiếm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tên sản phẩm</th>
+                        <th>Số lượng</th>
+                        <th>Giá (VNĐ)</th>
+                        <th>Danh mục</th>
+                        <th>Kho</th>
+                        <th style="width: 150px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Products)
+                    {
+                        <tr>
+                            <td><strong>@item.Name</strong></td>
+                            <td>@item.Quantity</td>
+                            <td>@item.Price.ToString("N0")</td>
+                            <td>@item.Category.Name</td>
+                            <td>@item.Warehouse.Name</td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" title="Sửa"><i class="fa-solid fa-pen"></i></a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" title="Xóa"><i class="fa-solid fa-trash"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            @if (Model.TotalPages > 1)
+            {
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mt-4">
+                        <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageNumber="@(Model.PageNumber - 1)"
+                               asp-route-searchString="@Model.SearchString"
+                               asp-route-categoryId="@Model.CategoryId">Trước</a>
+                        </li>
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-pageNumber="@i"
+                                   asp-route-searchString="@Model.SearchString"
+                                   asp-route-categoryId="@Model.CategoryId">@i</a>
+                            </li>
+                        }
+                        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageNumber="@(Model.PageNumber + 1)"
+                               asp-route-searchString="@Model.SearchString"
+                               asp-route-categoryId="@Model.CategoryId">Sau</a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        </div>
+    </div>
+</div>

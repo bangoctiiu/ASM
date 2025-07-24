@@ -1,0 +1,17 @@
+﻿@model ASM.Models.Category
+
+@{
+    ViewData["Title"] = "Xóa Danh mục";
+}
+
+<div class="container mt-4" style="max-width: 600px;">
+    <h1 class="text-danger">Xác nhận xóa</h1>
+    <h3>Bạn có chắc chắn muốn xóa danh mục "@Model.Name"?</h3>
+    <div class="mt-4">
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">Xóa</button>
+            <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+        </form>
+    </div>
+</div>
