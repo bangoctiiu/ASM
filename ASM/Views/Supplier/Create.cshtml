@@ -1,0 +1,89 @@
+﻿@model ASM.Models.Supplier
+
+@{
+    ViewData["Title"] = "Thêm Nhà Cung Cấp";
+}
+
+<style>
+    .form-card {
+        max-width: 650px;
+        margin: 50px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 24px;
+        margin-bottom: 25px;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        height: 45px;
+    }
+
+    textarea.form-control {
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .btn-save {
+        background-color: #1e90ff;
+        color: white;
+        font-weight: 500;
+        height: 45px;
+        border-radius: 8px;
+        border: none;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-save:hover {
+            background-color: #0d6efd;
+        }
+</style>
+
+<div class="form-card">
+    <h2 class="form-title">Thông tin nhà cung cấp</h2>
+
+    <form asp-action="Create" method="post">
+        <!-- ✅ Thêm hidden input để gửi MaNCC (do controller đã sinh tự động) -->
+        <input type="hidden" asp-for="MaNCC" />
+
+        <!-- ✅ Hiển thị lỗi từ ModelState -->
+        <div asp-validation-summary="All" class="text-danger"></div>
+
+        <div class="form-group mb-3">
+            <label asp-for="TenNCC" class="form-label">Tên nhà cung cấp</label>
+            <input asp-for="TenNCC" class="form-control" placeholder="Nhập tên nhà cung cấp" />
+            <span asp-validation-for="TenNCC" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="SDT" class="form-label">Số điện thoại</label>
+            <input asp-for="SDT" class="form-control" placeholder="Nhập số điện thoại" />
+            <span asp-validation-for="SDT" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="Email" class="form-label">Email</label>
+            <input asp-for="Email" class="form-control" placeholder="Nhập email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mb-4">
+            <label asp-for="DiaChi" class="form-label">Địa chỉ nhà cung cấp</label>
+            <textarea asp-for="DiaChi" class="form-control" placeholder="Nhập địa chỉ" rows="3"></textarea>
+            <span asp-validation-for="DiaChi" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-save w-100">Lưu thông tin</button>
+    </form>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

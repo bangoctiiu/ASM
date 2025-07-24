@@ -1,0 +1,16 @@
+﻿@model ASM.Models.Supplier
+
+@{
+    ViewData["Title"] = "Xóa nhà cung cấp";
+}
+
+<div class="form-card">
+    <h2 class="form-title">Xóa nhà cung cấp</h2>
+    <p>Bạn có chắc chắn muốn xóa nhà cung cấp "<strong>@Model.TenNCC</strong>" không?</p>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="MaNCC" />
+        <button type="submit" class="btn btn-danger">Xóa</button>
+        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    </form>
+</div>

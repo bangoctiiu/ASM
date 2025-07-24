@@ -1,0 +1,57 @@
+﻿@model IEnumerable<ASM.Models.Supplier>
+
+@{
+    ViewData["Title"] = "Danh sách nhà cung cấp";
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">📋 Danh sách nhà cung cấp</h2>
+
+    <div class="d-flex justify-content-end mb-3">
+        <a asp-action="Create" class="btn btn-primary">
+            ➕ Thêm nhà cung cấp
+        </a>
+    </div>
+
+    <table class="table table-bordered table-striped shadow-sm">
+        <thead class="table-dark text-center">
+            <tr>
+                <th style="width: 10%">Mã NCC</th>
+                <th style="width: 20%">Tên NCC</th>
+                <th style="width: 15%">SĐT</th>
+                <th style="width: 20%">Email</th>
+                <th>Địa chỉ</th>
+                <th style="width: 15%">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="6" class="text-center text-muted">Không có nhà cung cấp nào được tìm thấy.</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="text-center">@item.MaNCC</td>
+                        <td>@item.TenNCC</td>
+                        <td class="text-center">@item.SDT</td>
+                        <td>@item.Email</td>
+                        <td>@item.DiaChi</td>
+                        <td class="text-center">
+                            <a asp-action="Edit" asp-route-id="@item.MaNCC" class="btn btn-sm btn-warning me-1">
+                                ✏️ Sửa
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@item.MaNCC" class="btn btn-sm btn-danger">
+                                🗑️ Xóa
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

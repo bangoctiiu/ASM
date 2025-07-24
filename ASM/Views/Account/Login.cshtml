@@ -1,0 +1,99 @@
+﻿@model ASM.Models.LoginViewModel
+
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="login-page-container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5 col-xl-4">
+            <div class="card shadow-lg border-0 rounded-lg mt-5 login-card-custom">
+                <div class="card-header text-center bg-primary text-white">
+                    <h3 class="fw-bold my-2"><i class="fas fa-sign-in-alt me-2"></i>@ViewData["Title"]</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <p class="text-muted">Chào mừng trở lại! Vui lòng nhập thông tin của bạn.</p>
+                    </div>
+
+                    <form asp-controller="Account" asp-action="Login" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        @if (TempData["Success"] != null)
+                        {
+                            <div class="alert alert-success">@TempData["Success"]</div>
+                        }
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Username" class="form-control" placeholder="Tên đăng nhập" />
+                            <label asp-for="Username"><i class="fa-regular fa-user me-2"></i>Tên đăng nhập</label>
+                            <span asp-validation-for="Username" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <div class="form-floating">
+                                <input asp-for="Password" type="password" class="form-control" id="passwordInput" placeholder="Mật khẩu" />
+                                <label asp-for="Password"><i class="fa-solid fa-lock me-2"></i>Mật khẩu</label>
+                            </div>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fa-solid fa-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small mt-1 d-block"></span>
+
+
+                        <div class="d-flex justify-content-between align-items-center my-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" asp-for="RememberMe">
+                                <label class="form-check-label" asp-for="RememberMe">
+                                    Ghi nhớ tôi
+                                </label>
+                            </div>
+                            <a asp-action="ForgotPassword" class="text-decoration-none small">Quên mật khẩu?</a>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold">Đăng nhập</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center py-3">
+                    <small class="text-muted">
+                        Chưa có tài khoản?
+                        <a asp-controller="Account" asp-action="Register" class="text-decoration-none fw-bold">Đăng ký ngay</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            const togglePassword = document.querySelector('#togglePassword');
+            const passwordInput = document.querySelector('#passwordInput');
+            const toggleIcon = document.querySelector('#toggleIcon');
+
+            togglePassword.addEventListener('click', function () {
+                // Lấy kiểu type hiện tại của input
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+
+                // Đổi icon
+                if (type === 'password') {
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                } else {
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,140 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> _signInManager
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Quản Lý Kho</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+    @* Khu vực để các trang con có thể thêm CSS riêng *@
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+            <div class="container">
+                <!-- Logo và Tên ứng dụng -->
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    <i class="fa-solid fa-warehouse me-2 text-primary"></i>
+                    <strong>QUẢN LÝ KHO</strong>
+                </a>
+
+                <!-- Nút menu trên di động -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Nội dung menu -->
+                <div class="collapse navbar-collapse" id="main-nav">
+                    <!-- Menu điều hướng chính -->
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        @if (_signInManager.IsSignedIn(User))
+                        {
+                            <!-- CÁC MỤC CHỈ HIỂN THỊ KHI ĐÃ ĐĂNG NHẬP -->
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Product" asp-action="Index">Sản phẩm</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Import" asp-action="Index">Nhập kho</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Supplier" asp-action="Create">Nhà cung cấp</a>
+                            </li>
+
+                            <!-- MENU DROPDOWN CHỈ DÀNH CHO ADMIN -->
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="adminMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Quản trị
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="adminMenu">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Category" asp-action="Index">
+                                                <i class="fa-solid fa-boxes-stacked fa-fw me-2"></i>Quản lý Danh mục
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Warehouse" asp-action="Index">
+                                                <i class="fa-solid fa-dolly fa-fw me-2"></i>Quản lý Kho hàng
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Account" asp-action="UserManagement">
+                                                <i class="fa-solid fa-users-cog fa-fw me-2"></i>Quản lý User
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            
+                        }
+                    </ul>
+
+                    <!-- Các nút chức năng (bên phải) -->
+                    <div class="d-flex align-items-center">
+                        @if (_signInManager.IsSignedIn(User))
+                        {
+                            <!-- Menu người dùng khi đã đăng nhập -->
+                            <div class="dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-user-circle me-1"></i>
+                                    Chào, @User.Identity.Name!
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="fa-solid fa-address-card fa-fw me-2"></i>Hồ sơ</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                            <button type="submit" class="dropdown-item text-danger"><i class="fa-solid fa-right-from-bracket fa-fw me-2"></i>Đăng xuất</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Nút đăng nhập/đăng ký khi chưa đăng nhập -->
+                            <a asp-controller="Account" asp-action="Login" class="nav-link me-2">Đăng nhập</a>
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Đăng ký</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+
+
+    <!-- Phần nội dung chính của trang sẽ được render ở đây -->
+    <main role="main">
+        @RenderBody()
+    </main>
+
+    <!-- Footer chung cho toàn bộ trang web -->
+    <footer class="border-top footer text-muted bg-light">
+        <div class="container text-center py-4">
+            &copy; @DateTime.Now.Year - Hệ Thống Quản Lý Kho - <a asp-controller="Home" asp-action="Privacy">Chính sách bảo mật</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
