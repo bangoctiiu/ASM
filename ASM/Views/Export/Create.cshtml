@@ -1,0 +1,128 @@
+﻿@model ASM.Models.ExportSlipViewModel
+@{
+    ViewData["Title"] = "Tạo Phiếu Xuất Kho";
+}
+
+<div class="card shadow border-0 rounded-lg mt-4">
+    <div class="card-header bg-primary text-white text-center">
+        <h3 class="mb-0">@ViewData["Title"]</h3>
+    </div>
+    <div class="card-body p-4">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="ExportDate" class="form-label fw-bold"></label>
+                    <input asp-for="ExportDate" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="ExportDate" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Reason" class="form-label fw-bold"></label>
+                    <input asp-for="Reason" class="form-control" placeholder="VD: Bán lẻ cho khách hàng..." />
+                    <span asp-validation-for="Reason" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Thêm phần chọn khách hàng -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CustomerId" class="form-label fw-bold"></label>
+                    <select asp-for="CustomerId" class="form-control" asp-items="ViewBag.CustomerList">
+                        <option value="">-- Chọn khách hàng --</option>
+                    </select>
+                    <span asp-validation-for="CustomerId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <hr />
+            <h4>Chi tiết sản phẩm xuất kho</h4>
+            <table class="table table-bordered" id="productDetailsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:50%">Sản phẩm</th>
+                        <th>Tồn kho</th>
+                        <th>Số lượng xuất</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button type="button" id="addProductBtn" class="btn btn-success mt-2">
+                <i class="fa fa-plus me-2"></i>Thêm sản phẩm
+            </button>
+            <hr />
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                <button type="submit" class="btn btn-primary">Lưu Phiếu Xuất</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(function () {
+            let productIndex = 0;
+
+            function addRow() {
+                let row = `
+                <tr>
+                    <td>
+                        <select name="Details[${productIndex}].ProductId" class="form-select product-select" required>
+                            <option value="">-- Chọn sản phẩm --</option>
+                            @foreach (var item in (SelectList)ViewBag.ProductList)
+                            {
+                                    <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </td>
+                    <td><input type="number" class="form-control stock" readonly /></td>
+                    <td>
+                        <input type="number" name="Details[${productIndex}].Quantity" class="form-control qty" min="1" required />
+                        <div class="text-danger small msg"></div>
+                    </td>
+                    <td><button type="button" class="btn btn-danger btn-sm remove">X</button></td>
+                </tr>`;
+                $("#productDetailsTable tbody").append(row);
+                productIndex++;
+            }
+
+            $("#addProductBtn").click(addRow);
+
+            $("#productDetailsTable").on("change", ".product-select", function () {
+                let row = $(this).closest("tr");
+                $.get('@Url.Action("GetProductStock", "Export")', { productId: $(this).val() }, function (res) {
+                    if (res.quantity !== undefined) {
+                        row.find(".stock").val(res.quantity);
+                        row.find(".qty").attr("max", res.quantity);
+                    }
+                });
+            });
+
+            $("#productDetailsTable").on("input", ".qty", function () {
+                let max = parseInt($(this).attr("max"));
+                let val = parseInt($(this).val());
+                let msg = $(this).siblings(".msg");
+                if (val > max) {
+                    msg.text(`Tồn kho chỉ còn ${max}`);
+                } else {
+                    msg.text("");
+                }
+            });
+
+            $("#productDetailsTable").on("click", ".remove", function () {
+                $(this).closest("tr").remove();
+                $("#productDetailsTable tbody tr").each(function (i, tr) {
+                    $(tr).find("select, input").each(function () {
+                        if (this.name) this.name = this.name.replace(/\[\d+\]/, `[${i}]`);
+                    });
+                });
+                productIndex = $("#productDetailsTable tbody tr").length;
+            });
+
+            addRow();
+        });
+    </script>
+}

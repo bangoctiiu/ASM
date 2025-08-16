@@ -2,6 +2,17 @@
 
 @{
     ViewData["Title"] = "Chỉnh sửa Danh mục";
+    var allowedCategories = new List<string>
+    {
+        "Bút",
+        "Vở và giấy",
+        "Đồ dùng học sinh",
+        "Họa phẩm",
+        "Sách và tài liệu",
+        "Máy tính",
+                "test"
+
+    };
 }
 
 <div class="container mt-4" style="max-width: 600px;">
@@ -11,7 +22,15 @@
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <div class="mb-3">
             <label asp-for="Name" class="form-label"></label>
-            <input asp-for="Name" class="form-control" />
+            <select asp-for="Name" class="form-control">
+                <option value="">-- Chọn danh mục --</option>
+                @foreach (var name in allowedCategories)
+                {
+                    <option value="@name" selected="@(Model.Name == name)">
+                        @name
+                    </option>
+                }
+            </select>
             <span asp-validation-for="Name" class="text-danger"></span>
         </div>
         <div class="mb-3">

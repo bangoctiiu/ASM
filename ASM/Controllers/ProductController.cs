@@ -1,11 +1,15 @@
-﻿using ASM.Data;
-using ASM.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
+using ASM.Data;
+using ASM.Models;
 
 namespace ASM.Controllers
 {
@@ -20,65 +24,107 @@ namespace ASM.Controllers
         }
 
         // GET: /Product
-        public async Task<IActionResult> Index(string searchString, int? categoryId, int pageNumber = 1)
+        public async Task<IActionResult> Index(string searchString, int? categoryId, string? supplierId, int pageNumber = 1)
         {
             var productsQuery = _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Warehouse)
-                .AsQueryable();
+                                    .Include(p => p.Category)
+                                    .Include(p => p.Warehouse)
+                                    .Include(p => p.Supplier)
+                                    .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                productsQuery = productsQuery.Where(p => p.Name.Contains(searchString));
+                productsQuery = productsQuery.Where(p => p.Name.ToLower().Contains(searchString.ToLower()));
             }
 
-            if (categoryId.HasValue && categoryId > 0)
+            if (categoryId.HasValue)
             {
                 productsQuery = productsQuery.Where(p => p.CategoryId == categoryId.Value);
             }
 
-            // Debug số lượng sản phẩm
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] Tổng sản phẩm trong DB: {_context.Products.Count()}");
+            if (!string.IsNullOrEmpty(supplierId))
+            {
+                productsQuery = productsQuery.Where(p => p.MaNCC == supplierId);
+            }
 
-            const int pageSize = 8;
-            var totalProducts = await productsQuery.CountAsync();
-            var totalPages = (int)System.Math.Ceiling(totalProducts / (double)pageSize);
-            var paginatedProducts = await productsQuery
-                .OrderByDescending(p => p.Id)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            int pageSize = 10;
+            int totalItems = await productsQuery.CountAsync();
+            var products = await productsQuery
+                                .OrderByDescending(p => p.CreatedAt)
+                                .Skip((pageNumber - 1) * pageSize)
+                                .Take(pageSize)
+                                .ToListAsync();
 
             var viewModel = new ProductIndexViewModel
             {
-                Products = paginatedProducts,
-                Categories = new SelectList(await _context.Categories.OrderBy(c => c.Name).ToListAsync(), "Id", "Name", categoryId),
+                Products = products,
+                PageNumber = pageNumber,
+                TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize),
                 SearchString = searchString,
                 CategoryId = categoryId,
-                PageNumber = pageNumber,
-                TotalPages = totalPages
+                SupplierId = supplierId,
+                Categories = new SelectList(await _context.Categories.OrderBy(c => c.Name).ToListAsync(), "Id", "Name", categoryId),
+                Suppliers = new SelectList(await _context.Suppliers.OrderBy(s => s.TenNCC).ToListAsync(), "MaNCC", "TenNCC", supplierId)
             };
 
+            if (TempData["SuccessMessage"] != null) ViewData["SuccessMessage"] = TempData["SuccessMessage"];
+            if (TempData["ErrorMessage"] != null) ViewData["ErrorMessage"] = TempData["ErrorMessage"];
+
             return View(viewModel);
+        }
+
+        // GET: /Product/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var product = await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Warehouse)
+                .Include(p => p.Supplier)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (product == null) return NotFound();
+
+            return View(product);
         }
 
         // GET: /Product/Create
         public async Task<IActionResult> Create()
         {
             await PopulateDropdownsAsync();
-            return View(new Product { Quantity = 0 });
+            return View();
         }
 
         // POST: /Product/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Description,Quantity,Price,CategoryId,WarehouseId,MaNCC")] Product product)
+        public async Task<IActionResult> Create([Bind("Name,Description,Quantity,Price,CategoryId,WarehouseId,MaNCC")] Product product, IFormFile? imageFile)
         {
             if (ModelState.IsValid)
             {
+                product.CreatedAt = DateTime.Now;
+
+                // Lưu ảnh nếu có
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
+                    if (!Directory.Exists(uploadsFolder))
+                        Directory.CreateDirectory(uploadsFolder);
+
+                    var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(fileStream);
+                    }
+
+                    product.ImagePath = "/images/products/" + uniqueFileName;
+                }
+
                 _context.Add(product);
                 await _context.SaveChangesAsync();
-
                 TempData["SuccessMessage"] = $"Đã tạo thành công sản phẩm '{product.Name}'.";
                 return RedirectToAction(nameof(Index));
             }
@@ -87,57 +133,62 @@ namespace ASM.Controllers
             return View(product);
         }
 
-
         // GET: /Product/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
             var product = await _context.Products.FindAsync(id);
             if (product == null) return NotFound();
-
-            await PopulateDropdownsAsync(product.CategoryId, product.WarehouseId);
+            await PopulateDropdownsAsync(product.CategoryId, product.WarehouseId, product.MaNCC);
             return View(product);
         }
 
+        // POST: /Product/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Quantity,Price,CategoryId,WarehouseId,MaNCC")] Product productFromForm)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Quantity,Price,CategoryId,WarehouseId,MaNCC,CreatedAt,ImagePath")] Product product, IFormFile? imageFile)
         {
-            if (id != productFromForm.Id) return NotFound();
-
-            var productToUpdate = await _context.Products.FindAsync(id);
-            if (productToUpdate == null)
-            {
-                TempData["ErrorMessage"] = "Không tìm thấy sản phẩm để cập nhật.";
-                return RedirectToAction(nameof(Index));
-            }
+            if (id != product.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    productToUpdate.Name = productFromForm.Name;
-                    productToUpdate.Description = productFromForm.Description;
-                    productToUpdate.Quantity = productFromForm.Quantity;
-                    productToUpdate.Price = productFromForm.Price;
-                    productToUpdate.CategoryId = productFromForm.CategoryId;
-                    productToUpdate.WarehouseId = productFromForm.WarehouseId;
-                    productToUpdate.MaNCC = productFromForm.MaNCC;
+                    // Nếu có ảnh mới thì lưu lại
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
+                        if (!Directory.Exists(uploadsFolder))
+                            Directory.CreateDirectory(uploadsFolder);
 
+                        var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(fileStream);
+                        }
+
+                        product.ImagePath = "/images/products/" + uniqueFileName;
+                    }
+
+                    _context.Update(product);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = $"Đã cập nhật sản phẩm '{productToUpdate.Name}'.";
-                    return RedirectToAction(nameof(Index));
+                    TempData["SuccessMessage"] = $"Đã cập nhật sản phẩm '{product.Name}'.";
                 }
-                catch (DbUpdateException)
+                catch (DbUpdateConcurrencyException)
                 {
-                    ModelState.AddModelError("", "Không thể lưu thay đổi. Vui lòng thử lại.");
+                    if (!ProductExists(product.Id))
+                        return NotFound();
+                    else
+                        throw;
                 }
+                return RedirectToAction(nameof(Index));
             }
 
-            await PopulateDropdownsAsync(productFromForm.CategoryId, productFromForm.WarehouseId, productFromForm.MaNCC);
-            return View(productFromForm);
+            await PopulateDropdownsAsync(product.CategoryId, product.WarehouseId, product.MaNCC);
+            return View(product);
         }
-
 
         // GET: /Product/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -146,8 +197,8 @@ namespace ASM.Controllers
             var product = await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Warehouse)
+                .Include(p => p.Supplier)
                 .FirstOrDefaultAsync(p => p.Id == id);
-
             if (product == null) return NotFound();
             return View(product);
         }
@@ -167,17 +218,48 @@ namespace ASM.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // POST: /Product/DeleteMultiple
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteMultiple(IEnumerable<int> productIds)
+        {
+            if (productIds == null || !productIds.Any())
+            {
+                TempData["ErrorMessage"] = "Vui lòng chọn ít nhất một sản phẩm để xóa.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                var productsToDelete = await _context.Products
+                                                     .Where(p => productIds.Contains(p.Id))
+                                                     .ToListAsync();
+
+                if (productsToDelete.Any())
+                {
+                    _context.Products.RemoveRange(productsToDelete);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = $"Đã xóa thành công {productsToDelete.Count} sản phẩm.";
+                }
+            }
+            catch (DbUpdateException)
+            {
+                TempData["ErrorMessage"] = "Không thể xóa sản phẩm do có dữ liệu liên quan.";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
         private bool ProductExists(int id)
         {
             return _context.Products.Any(e => e.Id == id);
         }
-        private async Task PopulateDropdownsAsync(object? selectedCategory = null, object? selectedWarehouse = null, object? selectedMaNCC = null)
+
+        private async Task PopulateDropdownsAsync(object? selectedCategory = null, object? selectedWarehouse = null, object? selectedSupplier = null)
         {
-            ViewBag.CategoryId = new SelectList(await _context.Categories.OrderBy(c => c.Name).ToListAsync(), "Id", "Name", selectedCategory);
-            ViewBag.WarehouseId = new SelectList(await _context.Warehouses.OrderBy(w => w.Name).ToListAsync(), "Id", "Name", selectedWarehouse);
-            ViewBag.MaNCC = new SelectList(await _context.Suppliers.OrderBy(s => s.TenNCC).ToListAsync(), "MaNCC", "TenNCC", selectedMaNCC);
+            ViewBag.CategoryList = new SelectList(await _context.Categories.OrderBy(c => c.Name).ToListAsync(), "Id", "Name", selectedCategory);
+            ViewBag.WarehouseList = new SelectList(await _context.Warehouses.OrderBy(w => w.Name).ToListAsync(), "Id", "Name", selectedWarehouse);
+            ViewBag.SupplierList = new SelectList(await _context.Suppliers.OrderBy(s => s.TenNCC).ToListAsync(), "MaNCC", "TenNCC", selectedSupplier);
         }
-
-
     }
 }

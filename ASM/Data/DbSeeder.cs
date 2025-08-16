@@ -13,24 +13,39 @@ namespace ASM.Data
             var userManager = service.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = service.GetRequiredService<RoleManager<IdentityRole>>();
 
-            await roleManager.CreateAsync(new IdentityRole("Admin"));
-            await roleManager.CreateAsync(new IdentityRole("User"));
+            // Tạo role nếu chưa có
+            if (!await roleManager.RoleExistsAsync("Admin"))
+                await roleManager.CreateAsync(new IdentityRole("Admin"));
 
-            var adminUser = new ApplicationUser
-            {
-                UserName = "admin@example.com",
-                Email = "admin@example.com",
-                FullName = "Administrator",
-                EmailConfirmed = true,
-                PhoneNumberConfirmed = true
-            };
+            if (!await roleManager.RoleExistsAsync("User"))
+                await roleManager.CreateAsync(new IdentityRole("User"));
 
-            var userInDb = await userManager.FindByEmailAsync(adminUser.Email);
-            if (userInDb == null)
+            // Tạo admin mặc định nếu chưa có
+            var adminEmail = "admin@example.com";
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+            if (adminUser == null)
             {
-                await userManager.CreateAsync(adminUser, "Admin@123");
-                await userManager.AddToRoleAsync(adminUser, "Admin");
+                adminUser = new ApplicationUser
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    FullName = "Administrator",
+                    EmailConfirmed = true,
+                    PhoneNumberConfirmed = true
+                };
+
+                var createResult = await userManager.CreateAsync(adminUser, "Admin@123");
+                if (createResult.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(adminUser, "Admin");
+                }
+                else
+                {
+                    throw new Exception("Không thể tạo tài khoản admin: " + string.Join(", ", createResult.Errors));
+                }
             }
         }
+
     }
 }

@@ -4,62 +4,69 @@
     ViewData["Title"] = "Tạo sản phẩm mới";
 }
 
-<div class="card shadow border-0 rounded-lg card-custom">
+<div class="card shadow border-0 rounded-lg mt-4">
     <div class="card-header bg-primary text-white text-center">
         <h3 class="mb-0">@ViewData["Title"]</h3>
     </div>
     <div class="card-body p-4">
-        <form asp-action="Create" method="post">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label asp-for="Name" class="form-label fw-bold"><i class="fas fa-box me-2"></i>Tên sản phẩm</label>
+                        <label asp-for="Name" class="form-label fw-bold"><i class="fas fa-box me-2"></i></label>
                         <input asp-for="Name" class="form-control" placeholder="Nhập tên sản phẩm..." />
                         <span asp-validation-for="Name" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Description" class="form-label fw-bold"><i class="fas fa-align-left me-2"></i>Mô tả</label>
+                        <label asp-for="Description" class="form-label fw-bold"><i class="fas fa-align-left me-2"></i></label>
                         <textarea asp-for="Description" class="form-control" rows="5" placeholder="Mô tả chi tiết về sản phẩm..."></textarea>
                         <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <!-- Chọn ảnh sản phẩm -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold"><i class="fas fa-image me-2"></i>Ảnh sản phẩm</label>
+                        <input type="file" name="imageFile" class="form-control" accept="image/*" onchange="previewImage(event)" />
+                        <img id="preview" src="#" alt="Ảnh sản phẩm" style="max-width:200px; margin-top:10px; display:none;" />
                     </div>
                 </div>
 
                 <div class="col-md-6">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label asp-for="Quantity" class="form-label fw-bold"><i class="fas fa-cubes me-2"></i>Số lượng</label>
+                            <label asp-for="Quantity" class="form-label fw-bold"><i class="fas fa-cubes me-2"></i></label>
                             <input asp-for="Quantity" type="number" class="form-control" placeholder="VD: 100" />
                             <span asp-validation-for="Quantity" class="text-danger"></span>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label asp-for="Price" class="form-label fw-bold"><i class="fas fa-dollar-sign me-2"></i>Giá (VNĐ)</label>
-                            <input asp-for="Price" type="number" class="form-control" placeholder="VD: 50000" />
+                            <label asp-for="Price" class="form-label fw-bold"><i class="fas fa-dollar-sign me-2"></i></label>
+                            <input asp-for="Price" type="number" step="any" class="form-control" placeholder="VD: 50000" />
                             <span asp-validation-for="Price" class="text-danger"></span>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="CategoryId" class="form-label fw-bold"><i class="fas fa-tags me-2"></i>Danh mục</label>
-                        <select asp-for="CategoryId" class="form-control select2-basic" asp-items="ViewBag.CategoryId">
-                            <option value="">-- Chọn danh mục --</option>
+                        <label asp-for="CategoryId" class="form-label fw-bold"><i class="fas fa-tags me-2"></i></label>
+                        <select asp-for="CategoryId" class="form-control select2-basic" asp-items="ViewBag.CategoryList">
+                            <option disabled selected>-- Chọn danh mục --</option>
                         </select>
                         <span asp-validation-for="CategoryId" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="WarehouseId" class="form-label fw-bold"><i class="fas fa-warehouse me-2"></i>Kho hàng</label>
-                        <select asp-for="WarehouseId" class="form-control select2-basic" asp-items="ViewBag.WarehouseId">
-                            <option value="">-- Chọn kho hàng --</option>
+                        <label asp-for="WarehouseId" class="form-label fw-bold"><i class="fas fa-warehouse me-2"></i></label>
+                        <select asp-for="WarehouseId" class="form-control select2-basic" asp-items="ViewBag.WarehouseList">
+                            <option disabled selected>-- Chọn kho hàng --</option>
                         </select>
                         <span asp-validation-for="WarehouseId" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="MaNCC" class="form-label fw-bold"><i class="fas fa-industry me-2"></i>Nhà cung cấp</label>
-                        <select asp-for="MaNCC" class="form-control select2-basic" asp-items="ViewBag.MaNCC">
-                            <option value="">-- Chọn nhà cung cấp --</option>
+                        <label asp-for="MaNCC" class="form-label fw-bold"><i class="fas fa-industry me-2"></i></label>
+                        <select asp-for="MaNCC" class="form-control select2-basic" asp-items="ViewBag.SupplierList">
+                            <option disabled selected>-- Chọn nhà cung cấp --</option>
                         </select>
                         <span asp-validation-for="MaNCC" class="text-danger"></span>
                     </div>
@@ -69,23 +76,35 @@
             <hr class="my-4" />
 
             <div class="d-flex justify-content-end gap-2">
-                <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Quay lại</a>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Tạo sản phẩm</button>
+                <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Quay lại danh sách</a>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-plus-circle me-2"></i>Tạo sản phẩm</button>
             </div>
         </form>
     </div>
 </div>
 
 @section Scripts {
-    @await Html.PartialAsync("_ValidationScriptsPartial")
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 
     <script>
         $(document).ready(function () {
             $('.select2-basic').select2({
-                placeholder: "-- Chọn một mục --",
+                placeholder: "Vui lòng chọn một mục",
                 allowClear: true,
                 theme: "bootstrap-5"
             });
         });
+
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                var output = document.getElementById('preview');
+                output.src = reader.result;
+                output.style.display = 'block';
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
     </script>
 }

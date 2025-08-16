@@ -28,12 +28,17 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Seed the database.
+// Seed the database
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
+        var context = services.GetRequiredService<AppDbContext>();
+        // Áp dụng migrations nếu chưa có
+        context.Database.Migrate();
+
+        // Chạy seeder
         await DbSeeder.SeedRolesAndAdminAsync(services);
     }
     catch (Exception ex)
@@ -42,6 +47,7 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

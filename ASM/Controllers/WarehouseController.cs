@@ -30,10 +30,9 @@ namespace ASM.Controllers
             return View();
         }
 
-        // POST: /Warehouse/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Location")] Warehouse warehouse)
+        public async Task<IActionResult> Create([Bind("Id,Name,Location,Region,Province,District,MapCoordinates")] Warehouse warehouse)
         {
             if (ModelState.IsValid)
             {
@@ -45,22 +44,11 @@ namespace ASM.Controllers
             return View(warehouse);
         }
 
-        // GET: /Warehouse/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null) return NotFound();
-            var warehouse = await _context.Warehouses.FindAsync(id);
-            if (warehouse == null) return NotFound();
-            return View(warehouse);
-        }
-
-        // POST: /Warehouse/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Location")] Warehouse warehouse)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Location,Region,Province,District,MapCoordinates")] Warehouse warehouse)
         {
             if (id != warehouse.Id) return NotFound();
-
             if (ModelState.IsValid)
             {
                 try
@@ -78,6 +66,18 @@ namespace ASM.Controllers
             }
             return View(warehouse);
         }
+
+
+        // GET: /Warehouse/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+            var warehouse = await _context.Warehouses.FindAsync(id);
+            if (warehouse == null) return NotFound();
+            return View(warehouse);
+        }
+
+       
 
         // GET: /Warehouse/Delete/5
         public async Task<IActionResult> Delete(int? id)

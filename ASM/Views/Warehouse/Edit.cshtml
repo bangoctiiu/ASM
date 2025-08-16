@@ -9,19 +9,163 @@
     <form asp-action="Edit">
         <input type="hidden" asp-for="Id" />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
         <div class="mb-3">
             <label asp-for="Name" class="form-label"></label>
             <input asp-for="Name" class="form-control" />
             <span asp-validation-for="Name" class="text-danger"></span>
         </div>
+
         <div class="mb-3">
-            <label asp-for="Location" class="form-label"></label>
+            <label asp-for="Location" class="form-label">Địa chỉ kho</label>
             <input asp-for="Location" class="form-control" />
             <span asp-validation-for="Location" class="text-danger"></span>
         </div>
+
+        <div class="mb-3">
+            <label asp-for="MapCoordinates" class="form-label">Vị trí kho (Google Maps)</label>
+            <input asp-for="MapCoordinates" id="MapCoordinates" class="form-control" placeholder="Chọn trên bản đồ" readonly />
+            <div id="map" style="height: 300px; margin-top: 10px; border: 1px solid #ccc;"></div>
+            <span asp-validation-for="MapCoordinates" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Region" class="form-label">Miền</label>
+            <select asp-for="Region" class="form-control" id="regionSelect">
+                <option value="">-- Chọn miền --</option>
+                <option value="Bắc" selected="@(Model.Region == "Bắc")">Bắc</option>
+                <option value="Trung" selected="@(Model.Region == "Trung")">Trung</option>
+                <option value="Nam" selected="@(Model.Region == "Nam")">Nam</option>
+                <option value="Tây Nguyên" selected="@(Model.Region == "Tây Nguyên")">Tây Nguyên</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Province" class="form-label">Tỉnh / Thành phố</label>
+            <select asp-for="Province" class="form-control" id="provinceSelect">
+                <option value="">-- Chọn tỉnh --</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="District" class="form-label">Quận / Huyện</label>
+            <select asp-for="District" class="form-control" id="districtSelect">
+                <option value="">-- Chọn quận --</option>
+            </select>
+        </div>
+
         <div class="mb-3">
             <button type="submit" class="btn btn-primary">Lưu</button>
             <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
         </div>
     </form>
 </div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDNI_ZWPqvdS6r6gPVO50I4TlYkfkZdXh8	"></script>
+    <script>
+        let map, marker;
+        function initMap() {
+            const coords = '@Model.MapCoordinates';
+            let latLng;
+            if (coords && coords.includes(",")) {
+                const parts = coords.split(",");
+                latLng = { lat: parseFloat(parts[0]), lng: parseFloat(parts[1]) };
+            } else {
+                latLng = { lat: 21.028511, lng: 105.804817 }; // Hà Nội
+            }
+
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: latLng,
+                zoom: coords ? 14 : 6
+            });
+
+            if (coords) {
+                marker = new google.maps.Marker({
+                    position: latLng,
+                    map: map
+                });
+            }
+
+            map.addListener("click", (e) => {
+                const lat = e.latLng.lat();
+                const lng = e.latLng.lng();
+                if (marker) {
+                    marker.setPosition(e.latLng);
+                } else {
+                    marker = new google.maps.Marker({
+                        position: e.latLng,
+                        map: map
+                    });
+                }
+                document.getElementById("MapCoordinates").value = lat + "," + lng;
+            });
+        }
+        window.onload = initMap;
+    </script>
+
+    <script>
+        const regionData = {
+            "Bắc": {
+                "Hà Nội": ["Ba Đình", "Hoàn Kiếm", "Đống Đa"],
+                "Hải Phòng": ["Lê Chân", "Ngô Quyền", "Hồng Bàng"]
+            },
+            "Trung": {
+                "Đà Nẵng": ["Hải Châu", "Thanh Khê", "Liên Chiểu"],
+                "Huế": ["Thành phố Huế", "Hương Thủy"]
+            },
+            "Nam": {
+                "TP.HCM": ["Quận 1", "Quận 3", "Thủ Đức"],
+                "Cần Thơ": ["Ninh Kiều", "Bình Thủy"]
+            },
+            "Tây Nguyên": {
+                "Đắk Lắk": ["Buôn Ma Thuột", "Buôn Đôn"],
+                "Lâm Đồng": ["Đà Lạt", "Bảo Lộc"]
+            }
+        };
+
+        const regionSelect = document.getElementById('regionSelect');
+        const provinceSelect = document.getElementById('provinceSelect');
+        const districtSelect = document.getElementById('districtSelect');
+
+        function populateProvinces(region) {
+            provinceSelect.innerHTML = '<option value="">-- Chọn tỉnh --</option>';
+            districtSelect.innerHTML = '<option value="">-- Chọn quận --</option>';
+            if (regionData[region]) {
+                Object.keys(regionData[region]).forEach(p => {
+                    let option = new Option(p, p);
+                    if (p === '@Model.Province') option.selected = true;
+                    provinceSelect.appendChild(option);
+                });
+                if ('@Model.Province') populateDistricts(region, '@Model.Province');
+            }
+        }
+
+        function populateDistricts(region, province) {
+            districtSelect.innerHTML = '<option value="">-- Chọn quận --</option>';
+            const districts = regionData[region]?.[province] || [];
+            districts.forEach(d => {
+                let option = new Option(d, d);
+                if (d === '@Model.District') option.selected = true;
+                districtSelect.appendChild(option);
+            });
+        }
+
+        regionSelect.addEventListener('change', function () {
+            populateProvinces(this.value);
+        });
+
+        provinceSelect.addEventListener('change', function () {
+            populateDistricts(regionSelect.value, this.value);
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            if ('@Model.Region') {
+                regionSelect.value = '@Model.Region';
+                populateProvinces('@Model.Region');
+            }
+        });
+    </script>
+}

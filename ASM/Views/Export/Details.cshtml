@@ -1,0 +1,58 @@
+﻿@model ASM.Models.ExportSlip
+
+@{
+    ViewData["Title"] = "Chi tiết phiếu xuất kho";
+    decimal totalValue = Model.ExportSlipDetails.Sum(d => d.Quantity * d.ExportPrice);
+}
+
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow border-0" style="width: 100%; max-width: 900px;">
+        <div class="card-header bg-info text-white">
+            <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>@ViewData["Title"] - Mã phiếu #@Model.Id.ToString("D6")</h4>
+        </div>
+        <div class="card-body p-4">
+            <dl class="row">
+                <dt class="col-sm-3">Ngày xuất:</dt>
+                <dd class="col-sm-9">@Model.ExportDate.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                <dt class="col-sm-3">Người tạo:</dt>
+                <dd class="col-sm-9">@Model.User?.FullName</dd>
+
+                <dt class="col-sm-3">Lý do:</dt>
+                <dd class="col-sm-9">@Model.Reason</dd>
+            </dl>
+            <hr />
+            <h5>Danh sách sản phẩm đã xuất</h5>
+            <table class="table table-bordered mt-3">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Số lượng</th>
+                        <th>Đơn giá (VNĐ)</th>
+                        <th>Thành tiền (VNĐ)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var detail in Model.ExportSlipDetails)
+                    {
+                        <tr>
+                            <td>@detail.Product.Name</td>
+                            <td>@detail.Quantity</td>
+                            <td>@detail.ExportPrice.ToString("N0")</td>
+                            <td>@((detail.Quantity * detail.ExportPrice).ToString("N0"))</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold">
+                        <td colspan="3" class="text-end">Tổng giá trị phiếu xuất:</td>
+                        <td>@totalValue.ToString("N0")</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div class="d-flex justify-content-end mt-4">
+                <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Quay lại danh sách</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -4,34 +4,50 @@
     ViewData["Title"] = "Xác nhận xóa sản phẩm";
 }
 
-<div class="container mt-4" style="max-width: 700px;">
-    <h1>@ViewData["Title"]</h1>
-    <h3 class="text-danger">Bạn có chắc chắn muốn xóa sản phẩm này không?</h3>
-    <hr />
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow border-danger" style="max-width: 800px;">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>@ViewData["Title"]</h4>
+        </div>
+        <div class="card-body p-4">
+            <p class="fs-5">Bạn có chắc chắn muốn xóa vĩnh viễn sản phẩm dưới đây không?</p>
+            <p class="text-muted">Hành động này không thể được hoàn tác.</p>
 
-    <div>
-        <h4>Sản phẩm: @Model.Name</h4>
-        <dl class="row mt-3">
-            <dt class="col-sm-3">Mô tả</dt>
-            <dd class="col-sm-9">@Model.Description</dd>
+            <div class="alert alert-secondary mt-3">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Name)</dt>
+                    <dd class="col-sm-8 fw-bold">@Model.Name</dd>
 
-            <dt class="col-sm-3">Số lượng</dt>
-            <dd class="col-sm-9">@Model.Quantity</dd>
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Description)</dt>
+                    <dd class="col-sm-8">@(Model.Description ?? "Không có mô tả")</dd>
 
-            <dt class="col-sm-3">Giá</dt>
-            <dd class="col-sm-9">@Model.Price.ToString("N0") VNĐ</dd>
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Quantity)</dt>
+                    <dd class="col-sm-8">@Model.Quantity</dd>
 
-            <dt class="col-sm-3">Danh mục</dt>
-            <dd class="col-sm-9">@Model.Category.Name</dd>
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Price)</dt>
+                    <dd class="col-sm-8">@Model.Price.ToString("N0") VNĐ</dd>
 
-            <dt class="col-sm-3">Kho</dt>
-            <dd class="col-sm-9">@Model.Warehouse.Name</dd>
-        </dl>
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Category)</dt>
+                    <dd class="col-sm-8">@Model.Category?.Name</dd>
 
-        <form asp-action="Delete">
-            <input type="hidden" asp-for="Id" />
-            <button type="submit" class="btn btn-danger">Xóa</button> |
-            <a asp-action="Index" class="btn btn-secondary">Hủy</a>
-        </form>
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Warehouse)</dt>
+                    <dd class="col-sm-8">@Model.Warehouse?.Name</dd>
+
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Supplier)</dt>
+                    <dd class="col-sm-8">@Model.Supplier?.TenNCC</dd>
+
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.CreatedAt)</dt>
+                    <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+                </dl>
+            </div>
+
+            <form asp-action="Delete" class="mt-4">
+                <input type="hidden" asp-for="Id" />
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Hủy bỏ</a>
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash-alt me-2"></i>Xác nhận xóa</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>

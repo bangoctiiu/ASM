@@ -1,16 +1,44 @@
 ﻿@model ASM.Models.Supplier
 
 @{
-    ViewData["Title"] = "Xóa nhà cung cấp";
+    ViewData["Title"] = "Xác nhận xóa nhà cung cấp";
 }
 
-<div class="form-card">
-    <h2 class="form-title">Xóa nhà cung cấp</h2>
-    <p>Bạn có chắc chắn muốn xóa nhà cung cấp "<strong>@Model.TenNCC</strong>" không?</p>
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow border-danger" style="max-width: 800px;">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>@ViewData["Title"]</h4>
+        </div>
+        <div class="card-body p-4">
+            <p class="fs-5">Bạn có chắc chắn muốn xóa vĩnh viễn nhà cung cấp dưới đây không?</p>
+            <p class="text-muted">Hành động này không thể được hoàn tác và có thể ảnh hưởng đến các sản phẩm liên quan.</p>
 
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="MaNCC" />
-        <button type="submit" class="btn btn-danger">Xóa</button>
-        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
-    </form>
+            <div class="alert alert-secondary mt-3">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.MaNCC)</dt>
+                    <dd class="col-sm-8">@Model.MaNCC</dd>
+
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.TenNCC)</dt>
+                    <dd class="col-sm-8 fw-bold">@Model.TenNCC</dd>
+
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ContactName)</dt>
+                    <dd class="col-sm-8">@(Model.ContactName ?? "Chưa có thông tin")</dd>
+
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Email)</dt>
+                    <dd class="col-sm-8">@Model.Email</dd>
+
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.SDT)</dt>
+                    <dd class="col-sm-8">@Model.SDT</dd>
+                </dl>
+            </div>
+
+            <form asp-action="Delete" class="mt-4">
+                <input type="hidden" asp-for="MaNCC" />
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Hủy bỏ</a>
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash-alt me-2"></i>Xác nhận xóa</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>

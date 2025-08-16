@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     @* Khu vực để các trang con có thể thêm CSS riêng *@
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -48,8 +48,13 @@
                                 <a class="nav-link" asp-controller="Import" asp-action="Index">Nhập kho</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Supplier" asp-action="Create">Nhà cung cấp</a>
+                                <a class="nav-link" asp-controller="Export" asp-action="Index">Xuất Kho</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Supplier" asp-action="Index">Nhà cung cấp</a>
+                            </li>
+                           
+
 
                             <!-- MENU DROPDOWN CHỈ DÀNH CHO ADMIN -->
                             @if (User.IsInRole("Admin"))
@@ -75,6 +80,12 @@
                                                 <i class="fa-solid fa-users-cog fa-fw me-2"></i>Quản lý User
                                             </a>
                                         </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Customer" asp-action="Index">
+                                                <i class="fa-solid fa-user fa-fw me-2"></i>Quản lý Khách hàng
+                                            </a>
+                                        </li>
+
                                     </ul>
                                 </li>
                             }

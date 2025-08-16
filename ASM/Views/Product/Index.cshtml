@@ -4,26 +4,65 @@
     ViewData["Title"] = "Quản lý sản phẩm";
 }
 
+<!-- === CSS TÙY CHỈNH === -->
+<style>
+    /* Làm cho các ô checkbox trong bảng rõ ràng và lớn hơn một chút */
+    .table .form-check-input {
+        width: 1.2em;
+        height: 1.2em;
+        border: 1px solid #888; /* Viền đậm hơn để dễ nhìn */
+    }
+
+    /* Định dạng cho cột "Thời gian tạo" */
+    .created-at-cell {
+        font-size: 0.9rem;
+        white-space: nowrap; /* Ngăn không cho ngày giờ bị ngắt dòng */
+        line-height: 1.2;
+    }
+
+        .created-at-cell .date-part {
+            display: block; /* Hiển thị ngày trên một dòng */
+            font-weight: 500;
+            color: #333;
+        }
+
+        .created-at-cell .time-part {
+            display: block; /* Hiển thị giờ trên một dòng riêng */
+            font-size: 0.8rem;
+            color: #777; /* Màu xám nhạt hơn cho giờ */
+        }
+
+</style>
+<!-- === KẾT THÚC CSS === -->
+
+
 <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>@ViewData["Title"]</h1>
         <a asp-action="Create" class="btn btn-primary"><i class="fa-solid fa-plus me-2"></i>Tạo sản phẩm mới</a>
     </div>
 
+    <!-- KHUNG TÌM KIẾM VÀ LỌC -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <form asp-action="Index" method="get" class="row g-3 align-items-end">
-                <div class="col-md-5">
+                <div class="col-md-4">
                     <label class="form-label fw-semibold">Tìm theo tên</label>
                     <input type="text" name="searchString" value="@Model.SearchString" class="form-control" placeholder="Nhập tên sản phẩm...">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label fw-semibold">Lọc theo danh mục</label>
                     <select name="categoryId" asp-items="@Model.Categories" class="form-select">
                         <option value="">Tất cả danh mục</option>
                     </select>
                 </div>
                 <div class="col-md-3">
+                    <label class="form-label fw-semibold">Lọc theo nhà cung cấp</label>
+                    <select name="supplierId" asp-items="@Model.Suppliers" class="form-select">
+                        <option value="">Tất cả nhà cung cấp</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <button type="submit" class="btn btn-info w-100"><i class="fa-solid fa-search me-2"></i>Tìm kiếm</button>
                 </div>
             </form>
@@ -33,70 +72,166 @@
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
+            @ViewData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @ViewData["ErrorMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Tên sản phẩm</th>
-                        <th>Số lượng</th>
-                        <th>Giá (VNĐ)</th>
-                        <th>Danh mục</th>
-                        <th>Kho</th>
-                        <th style="width: 150px;"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.Products)
-                    {
-                        <tr>
-                            <td><strong>@item.Name</strong></td>
-                            <td>@item.Quantity</td>
-                            <td>@item.Price.ToString("N0")</td>
-                            <td>@item.Category.Name</td>
-                            <td>@item.Warehouse.Name</td>
-                            <td>
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" title="Sửa"><i class="fa-solid fa-pen"></i></a>
-                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" title="Xóa"><i class="fa-solid fa-trash"></i></a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+    <!-- BẢNG DỮ LIỆU ĐƯỢC BỌC TRONG FORM ĐỂ XÓA HÀNG LOẠT -->
+    <form asp-action="DeleteMultiple" method="post" id="bulkDeleteForm">
+        @Html.AntiForgeryToken()
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <!-- NÚT XÓA HÀNG LOẠT -->
+                <button type="submit" class="btn btn-danger mb-3" id="deleteSelectedBtn" style="display: none;">
+                    <i class="fa-solid fa-trash-alt me-2"></i>Xóa các mục đã chọn
+                </button>
 
-            @if (Model.TotalPages > 1)
-            {
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-center mt-4">
-                        <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
-                            <a class="page-link" asp-action="Index"
-                               asp-route-pageNumber="@(Model.PageNumber - 1)"
-                               asp-route-searchString="@Model.SearchString"
-                               asp-route-categoryId="@Model.CategoryId">Trước</a>
-                        </li>
-                        @for (int i = 1; i <= Model.TotalPages; i++)
-                        {
-                            <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 5%;">
+                                    <input class="form-check-input" type="checkbox" id="selectAll" title="Chọn tất cả" />
+                                </th>
+                                <th>Ảnh</th> <!-- Cột ảnh mới -->
+                                <th>Tên sản phẩm</th>
+                                <th>Giá (VNĐ)</th>
+                                <th>Số lượng</th>
+                                <th>Nhà cung cấp</th>
+                                <th>Thời gian tạo</th>
+                                <th class="text-end" style="width: 120px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Products)
+                            {
+                                <tr>
+                                    <td>
+                                        <input class="form-check-input row-checkbox" type="checkbox" name="productIds" value="@item.Id" />
+                                    </td>
+
+                                    <!-- Hiển thị ảnh -->
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.ImagePath))
+                                        {
+                                            <img src="@item.ImagePath" alt="@item.Name" style="max-width:80px; height:auto;" />
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Không có ảnh</span>
+                                        }
+                                    </td>
+
+                                    <td><strong>@item.Name</strong></td>
+                                    <td>@item.Price.ToString("N0")</td>
+                                    <td>@item.Quantity</td>
+                                    <td>@item.Supplier.TenNCC</td>
+
+                                    <td class="created-at-cell">
+                                        <span class="date-part">@item.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                        <span class="time-part">@item.CreatedAt.ToString("HH:mm")</span>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info" title="Xem chi tiết"><i class="fa-solid fa-eye"></i></a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" title="Sửa"><i class="fa-solid fa-pen"></i></a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" title="Xóa"><i class="fa-solid fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- THANH PHÂN TRANG -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
                                 <a class="page-link" asp-action="Index"
-                                   asp-route-pageNumber="@i"
+                                   asp-route-pageNumber="@(Model.PageNumber - 1)"
                                    asp-route-searchString="@Model.SearchString"
-                                   asp-route-categoryId="@Model.CategoryId">@i</a>
+                                   asp-route-categoryId="@Model.CategoryId"
+                                   asp-route-supplierId="@Model.SupplierId">Trước</a>
                             </li>
-                        }
-                        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
-                            <a class="page-link" asp-action="Index"
-                               asp-route-pageNumber="@(Model.PageNumber + 1)"
-                               asp-route-searchString="@Model.SearchString"
-                               asp-route-categoryId="@Model.CategoryId">Sau</a>
-                        </li>
-                    </ul>
-                </nav>
-            }
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="@i"
+                                       asp-route-searchString="@Model.SearchString"
+                                       asp-route-categoryId="@Model.CategoryId"
+                                       asp-route-supplierId="@Model.SupplierId">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-pageNumber="@(Model.PageNumber + 1)"
+                                   asp-route-searchString="@Model.SearchString"
+                                   asp-route-categoryId="@Model.CategoryId"
+                                   asp-route-supplierId="@Model.SupplierId">Sau</a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            </div>
         </div>
-    </div>
+    </form>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            const selectAllCheckbox = $('#selectAll');
+            const rowCheckboxes = $('.row-checkbox');
+            const deleteSelectedBtn = $('#deleteSelectedBtn');
+
+            function updateState() {
+                const checkedCount = rowCheckboxes.filter(':checked').length;
+
+                if (checkedCount > 0) {
+                    deleteSelectedBtn.show();
+                } else {
+                    deleteSelectedBtn.hide();
+                }
+
+                selectAllCheckbox.prop('checked', checkedCount > 0 && checkedCount === rowCheckboxes.length);
+            }
+
+            selectAllCheckbox.on('click', function () {
+                rowCheckboxes.prop('checked', $(this).is(':checked'));
+                updateState();
+            });
+
+            rowCheckboxes.on('click', function () {
+                updateState();
+            });
+
+            $('#bulkDeleteForm').on('submit', function (e) {
+                const checkedCount = rowCheckboxes.filter(':checked').length;
+                if (checkedCount === 0) {
+                    alert('Vui lòng chọn ít nhất một sản phẩm để xóa.');
+                    e.preventDefault();
+                    return;
+                }
+
+                const confirmation = confirm(`Bạn có chắc chắn muốn xóa ${checkedCount} sản phẩm đã chọn không?`);
+                if (!confirmation) {
+                    e.preventDefault();
+                }
+            });
+
+            updateState();
+        });
+    </script>
+}

@@ -8,19 +8,126 @@
     <h1>@ViewData["Title"]</h1><hr />
     <form asp-action="Create">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
         <div class="mb-3">
             <label asp-for="Name" class="form-label"></label>
             <input asp-for="Name" class="form-control" />
             <span asp-validation-for="Name" class="text-danger"></span>
         </div>
+
         <div class="mb-3">
-            <label asp-for="Location" class="form-label"></label>
-            <input asp-for="Location" class="form-control" />
+            <label asp-for="Location" class="form-label">Địa chỉ kho</label>
+            <input asp-for="Location" class="form-control" placeholder="Nhập địa chỉ cụ thể" />
             <span asp-validation-for="Location" class="text-danger"></span>
         </div>
+
+        <div class="mb-3">
+            <label asp-for="MapCoordinates" class="form-label">Vị trí kho (Google Maps)</label>
+            <input asp-for="MapCoordinates" id="MapCoordinates" class="form-control" placeholder="Chọn trên bản đồ" readonly />
+            <div id="map" style="height: 300px; margin-top: 10px; border: 1px solid #ccc;"></div>
+            <span asp-validation-for="MapCoordinates" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Region" class="form-label">Miền</label>
+            <select asp-for="Region" class="form-control" id="regionSelect">
+                <option value="">-- Chọn miền --</option>
+                <option value="Bắc">Bắc</option>
+                <option value="Trung">Trung</option>
+                <option value="Nam">Nam</option>
+                <option value="Tây Nguyên">Tây Nguyên</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Province" class="form-label">Tỉnh / Thành phố</label>
+            <select asp-for="Province" class="form-control" id="provinceSelect">
+                <option value="">-- Chọn tỉnh --</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="District" class="form-label">Quận / Huyện</label>
+            <select asp-for="District" class="form-control" id="districtSelect">
+                <option value="">-- Chọn quận --</option>
+            </select>
+        </div>
+
         <div class="mb-3">
             <button type="submit" class="btn btn-primary">Tạo mới</button>
             <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
         </div>
     </form>
 </div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDNI_ZWPqvdS6r6gPVO50I4TlYkfkZdXh8	"></script>
+    <script>
+        let map, marker;
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 21.028511, lng: 105.804817 }, // Hà Nội
+                zoom: 6
+            });
+
+            map.addListener("click", (e) => {
+                const lat = e.latLng.lat();
+                const lng = e.latLng.lng();
+                if (marker) {
+                    marker.setPosition(e.latLng);
+                } else {
+                    marker = new google.maps.Marker({
+                        position: e.latLng,
+                        map: map
+                    });
+                }
+                document.getElementById("MapCoordinates").value = lat + "," + lng;
+            });
+        }
+        window.onload = initMap;
+    </script>
+
+    <script>
+        const regionData = {
+            "Bắc": {
+                "Hà Nội": ["Ba Đình", "Hoàn Kiếm", "Đống Đa"],
+                "Hải Phòng": ["Lê Chân", "Ngô Quyền", "Hồng Bàng"]
+            },
+            "Trung": {
+                "Đà Nẵng": ["Hải Châu", "Thanh Khê", "Liên Chiểu"],
+                "Huế": ["Thành phố Huế", "Hương Thủy"]
+            },
+            "Nam": {
+                "TP.HCM": ["Quận 1", "Quận 3", "Thủ Đức"],
+                "Cần Thơ": ["Ninh Kiều", "Bình Thủy"]
+            },
+            "Tây Nguyên": {
+                "Đắk Lắk": ["Buôn Ma Thuột", "Buôn Đôn"],
+                "Lâm Đồng": ["Đà Lạt", "Bảo Lộc"]
+            }
+        };
+
+        document.getElementById('regionSelect').addEventListener('change', function () {
+            const provinceSelect = document.getElementById('provinceSelect');
+            const districtSelect = document.getElementById('districtSelect');
+            provinceSelect.innerHTML = '<option value="">-- Chọn tỉnh --</option>';
+            districtSelect.innerHTML = '<option value="">-- Chọn quận --</option>';
+            const provinces = regionData[this.value];
+            if (provinces) {
+                Object.keys(provinces).forEach(province => {
+                    provinceSelect.appendChild(new Option(province, province));
+                });
+            }
+        });
+
+        document.getElementById('provinceSelect').addEventListener('change', function () {
+            const region = document.getElementById('regionSelect').value;
+            const districts = regionData[region]?.[this.value] || [];
+            const districtSelect = document.getElementById('districtSelect');
+            districtSelect.innerHTML = '<option value="">-- Chọn quận --</option>';
+            districts.forEach(d => districtSelect.appendChild(new Option(d, d)));
+        });
+    </script>
+}

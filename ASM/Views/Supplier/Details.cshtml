@@ -1,0 +1,43 @@
+﻿@model ASM.Models.Supplier
+
+@{
+    ViewData["Title"] = "Chi tiết nhà cung cấp";
+}
+
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow border-0" style="max-width: 800px;">
+        <div class="card-header bg-info text-white">
+            <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>@ViewData["Title"]</h4>
+        </div>
+        <div class="card-body p-4">
+            <h5 class="card-title mb-4">Thông tin chi tiết của: <span class="fw-bold">@Model.TenNCC</span></h5>
+
+            <dl class="row">
+                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.MaNCC)</dt>
+                <dd class="col-sm-8">@Model.MaNCC</dd>
+
+                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.TenNCC)</dt>
+                <dd class="col-sm-8">@Model.TenNCC</dd>
+
+                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ContactName)</dt>
+                <dd class="col-sm-8">@(Model.ContactName ?? "Chưa có thông tin")</dd>
+
+                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.SDT)</dt>
+                <dd class="col-sm-8">@Model.SDT</dd>
+
+                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Email)</dt>
+                <dd class="col-sm-8">@Model.Email</dd>
+
+                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.DiaChi)</dt>
+                <dd class="col-sm-8">@Model.DiaChi</dd>
+            </dl>
+
+            <hr class="my-4" />
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Edit" asp-route-id="@Model.MaNCC" class="btn btn-primary"><i class="fas fa-pen me-2"></i>Sửa</a>
+                <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Quay lại danh sách</a>
+            </div>
+        </div>
+    </div>
+</div>

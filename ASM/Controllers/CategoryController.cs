@@ -1,9 +1,10 @@
-﻿// File: Controllers/CategoryController.cs
-using ASM.Data;
+﻿using ASM.Data;
 using ASM.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ASM.Controllers
@@ -12,6 +13,19 @@ namespace ASM.Controllers
     public class CategoryController : Controller
     {
         private readonly AppDbContext _context;
+
+        // Danh sách danh mục hợp lệ
+        private readonly List<string> allowedCategories = new List<string>
+        {
+            "Bút",
+            "Vở và giấy",
+            "Đồ dùng học sinh",
+            "Họa phẩm",
+            "Sách và tài liệu",
+            "Máy tính",
+                        "test"
+
+        };
 
         public CategoryController(AppDbContext context)
         {
@@ -35,6 +49,11 @@ namespace ASM.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
         {
+            if (!allowedCategories.Contains(category.Name))
+            {
+                ModelState.AddModelError("Name", "Chỉ được chọn các danh mục có sẵn.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(category);
@@ -60,6 +79,11 @@ namespace ASM.Controllers
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category category)
         {
             if (id != category.Id) return NotFound();
+
+            if (!allowedCategories.Contains(category.Name))
+            {
+                ModelState.AddModelError("Name", "Chỉ được chọn các danh mục có sẵn.");
+            }
 
             if (ModelState.IsValid)
             {
@@ -93,7 +117,20 @@ namespace ASM.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _context.Categories
+                .Include(c => c.Products) // nạp danh sách sản phẩm liên quan
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (category == null)
+                return NotFound();
+
+            // Nếu vẫn còn sản phẩm thì không cho xóa
+            if (category.Products.Any())
+            {
+                TempData["ErrorMessage"] = "Không thể xóa danh mục này vì vẫn còn sản phẩm liên kết.";
+                return RedirectToAction(nameof(Index));
+            }
+
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Xóa danh mục thành công!";
@@ -101,7 +138,3 @@ namespace ASM.Controllers
         }
     }
 }
-
-
-
-

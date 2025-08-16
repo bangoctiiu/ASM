@@ -1,57 +1,115 @@
-﻿@model IEnumerable<ASM.Models.Supplier>
+﻿@* FIX LỖI BIÊN DỊCH:
+    Dòng @model bên dưới là quan trọng nhất. Nó phải là "SupplierIndexViewModel".
+    Tất cả các lỗi bạn gặp phải (như "'Supplier' does not contain a definition for 'TotalPages'...")
+    xảy ra vì dòng này bị sai, khiến View không hiểu được các thuộc tính như 
+    Model.Suppliers, Model.TotalPages, Model.SearchString, v.v.
+*@
+@model ASM.Models.SupplierIndexViewModel
 
 @{
-    ViewData["Title"] = "Danh sách nhà cung cấp";
+    ViewData["Title"] = "Quản lý nhà cung cấp";
 }
 
-<div class="container mt-5">
-    <h2 class="text-center mb-4">📋 Danh sách nhà cung cấp</h2>
-
-    <div class="d-flex justify-content-end mb-3">
-        <a asp-action="Create" class="btn btn-primary">
-            ➕ Thêm nhà cung cấp
-        </a>
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>@ViewData["Title"]</h1>
+        <a asp-action="Create" class="btn btn-primary shadow-sm"><i class="fa-solid fa-plus me-2"></i>Tạo nhà cung cấp mới</a>
     </div>
 
-    <table class="table table-bordered table-striped shadow-sm">
-        <thead class="table-dark text-center">
-            <tr>
-                <th style="width: 10%">Mã NCC</th>
-                <th style="width: 20%">Tên NCC</th>
-                <th style="width: 15%">SĐT</th>
-                <th style="width: 20%">Email</th>
-                <th>Địa chỉ</th>
-                <th style="width: 15%">Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (!Model.Any())
+    <!-- KHUNG TÌM KIẾM -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3 align-items-end">
+                <div class="col-md-9">
+                    <label class="form-label fw-semibold">Tìm theo tên hoặc email</label>
+                    <input type="text" name="searchString" value="@Model.SearchString" class="form-control" placeholder="Nhập tên hoặc email nhà cung cấp...">
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-info w-100"><i class="fa-solid fa-search me-2"></i>Tìm kiếm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- THÔNG BÁO (NẾU CÓ) -->
+    @if (ViewData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @ViewData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- BẢNG DỮ LIỆU -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.Suppliers.FirstOrDefault().TenNCC)</th>
+                            <th>@Html.DisplayNameFor(model => model.Suppliers.FirstOrDefault().ContactName)</th>
+                            <th>@Html.DisplayNameFor(model => model.Suppliers.FirstOrDefault().SDT)</th>
+                            <th>@Html.DisplayNameFor(model => model.Suppliers.FirstOrDefault().Email)</th>
+                            <th style="width: 150px;" class="text-end">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Suppliers.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center p-4">
+                                    <h5 class="text-muted">Không tìm thấy nhà cung cấp nào.</h5>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.Suppliers)
+                            {
+                                <tr>
+                                    <td><strong>@item.TenNCC</strong></td>
+                                    <td>@item.ContactName</td>
+                                    <td>@item.SDT</td>
+                                    <td>@item.Email</td>
+                                    <td class="text-end">
+                                        <a asp-action="Details" asp-route-id="@item.MaNCC" class="btn btn-sm btn-outline-info" title="Chi tiết"><i class="fa-solid fa-eye"></i></a>
+                                        <a asp-action="Edit" asp-route-id="@item.MaNCC" class="btn btn-sm btn-outline-primary" title="Sửa"><i class="fa-solid fa-pen"></i></a>
+                                        <a asp-action="Delete" asp-route-id="@item.MaNCC" class="btn btn-sm btn-outline-danger" title="Xóa"><i class="fa-solid fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- THANH PHÂN TRANG -->
+            @if (Model.TotalPages > 1)
             {
-                <tr>
-                    <td colspan="6" class="text-center text-muted">Không có nhà cung cấp nào được tìm thấy.</td>
-                </tr>
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageNumber="@(Model.PageNumber - 1)"
+                               asp-route-searchString="@Model.SearchString">Trước</a>
+                        </li>
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-pageNumber="@i"
+                                   asp-route-searchString="@Model.SearchString">@i</a>
+                            </li>
+                        }
+                        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageNumber="@(Model.PageNumber + 1)"
+                               asp-route-searchString="@Model.SearchString">Sau</a>
+                        </li>
+                    </ul>
+                </nav>
             }
-            else
-            {
-                foreach (var item in Model)
-                {
-                    <tr>
-                        <td class="text-center">@item.MaNCC</td>
-                        <td>@item.TenNCC</td>
-                        <td class="text-center">@item.SDT</td>
-                        <td>@item.Email</td>
-                        <td>@item.DiaChi</td>
-                        <td class="text-center">
-                            <a asp-action="Edit" asp-route-id="@item.MaNCC" class="btn btn-sm btn-warning me-1">
-                                ✏️ Sửa
-                            </a>
-                            <a asp-action="Delete" asp-route-id="@item.MaNCC" class="btn btn-sm btn-danger">
-                                🗑️ Xóa
-                            </a>
-                        </td>
-                    </tr>
-                }
-            }
-        </tbody>
-    </table>
+        </div>
+    </div>
 </div>

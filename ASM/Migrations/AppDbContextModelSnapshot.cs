@@ -110,6 +110,43 @@ namespace ASM.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("ASM.Models.Customer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Age")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Customers");
+                });
+
             modelBuilder.Entity("ASM.Models.ExportSlip", b =>
                 {
                     b.Property<int>("Id")
@@ -117,6 +154,12 @@ namespace ASM.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("ExportDate")
                         .HasColumnType("datetime2");
@@ -130,6 +173,10 @@ namespace ASM.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("CustomerId");
 
                     b.HasIndex("UserId");
 
@@ -173,14 +220,30 @@ namespace ASM.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("ImportDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("MaNCC")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("MaNCC");
 
                     b.HasIndex("UserId");
 
@@ -227,8 +290,18 @@ namespace ASM.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MaNCC")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -248,6 +321,8 @@ namespace ASM.Migrations
 
                     b.HasIndex("CategoryId");
 
+                    b.HasIndex("MaNCC");
+
                     b.HasIndex("WarehouseId");
 
                     b.ToTable("Products");
@@ -258,13 +333,19 @@ namespace ASM.Migrations
                     b.Property<string>("MaNCC")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("ContactName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("DiaChi")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("SDT")
                         .IsRequired()
@@ -288,14 +369,27 @@ namespace ASM.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("District")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Location")
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("MapCoordinates")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Province")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Region")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -437,11 +531,21 @@ namespace ASM.Migrations
 
             modelBuilder.Entity("ASM.Models.ExportSlip", b =>
                 {
-                    b.HasOne("ASM.Models.ApplicationUser", "User")
+                    b.HasOne("ASM.Models.ApplicationUser", null)
                         .WithMany("ExportSlips")
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.HasOne("ASM.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId");
+
+                    b.HasOne("ASM.Models.ApplicationUser", "User")
+                        .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Customer");
 
                     b.Navigation("User");
                 });
@@ -457,7 +561,7 @@ namespace ASM.Migrations
                     b.HasOne("ASM.Models.Product", "Product")
                         .WithMany("ExportSlipDetails")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("ExportSlip");
@@ -467,11 +571,29 @@ namespace ASM.Migrations
 
             modelBuilder.Entity("ASM.Models.ImportSlip", b =>
                 {
-                    b.HasOne("ASM.Models.ApplicationUser", "User")
+                    b.HasOne("ASM.Models.ApplicationUser", null)
                         .WithMany("ImportSlips")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.HasOne("ASM.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId");
+
+                    b.HasOne("ASM.Models.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("MaNCC")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("ASM.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Supplier");
 
                     b.Navigation("User");
                 });
@@ -487,7 +609,7 @@ namespace ASM.Migrations
                     b.HasOne("ASM.Models.Product", "Product")
                         .WithMany("ImportSlipDetails")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("ImportSlip");
@@ -503,6 +625,12 @@ namespace ASM.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("ASM.Models.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("MaNCC")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("ASM.Models.Warehouse", "Warehouse")
                         .WithMany("Products")
                         .HasForeignKey("WarehouseId")
@@ -510,6 +638,8 @@ namespace ASM.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+
+                    b.Navigation("Supplier");
 
                     b.Navigation("Warehouse");
                 });
