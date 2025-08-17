@@ -16,9 +16,9 @@ namespace ASM.Data
         IdentityUserToken<string>>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-        public DbSet<Customer> Customers { get; set; }
 
         // Khai báo tất cả các bảng trong cơ sở dữ liệu
+        public DbSet<Customer> Customers { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Warehouse> Warehouses { get; set; }
@@ -45,9 +45,10 @@ namespace ASM.Data
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // SỬA LỖI: Bỏ phần .WithMany(w => w.Products) vì nó không còn tồn tại trong Model Warehouse
             builder.Entity<Product>()
                 .HasOne(p => p.Warehouse)
-                .WithMany(w => w.Products)
+                .WithMany() // <-- Bỏ trống phần này
                 .HasForeignKey(p => p.WarehouseId)
                 .OnDelete(DeleteBehavior.Restrict);
 

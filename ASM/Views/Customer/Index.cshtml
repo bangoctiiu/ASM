@@ -1,165 +1,77 @@
 ﻿@model IEnumerable<ASM.Models.Customer>
+@using ASM.Models
 
 @{
-    ViewData["Title"] = "Quản Lý Khách Hàng";
+    ViewData["Title"] = "Quản lý Khách hàng";
 }
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"]</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: #f5f7fa;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            padding: 30px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 25px;
-            font-size: 28px;
-        }
-
-        .top-bar {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 15px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            overflow: hidden;
-            border-radius: 8px;
-        }
-
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #007bff;
-            color: white;
-            font-weight: 600;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        tr:hover {
-            background-color: #eef5ff;
-        }
-
-        .btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 13px;
-            transition: background-color 0.2s ease;
-        }
-
-        .btn-add {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .btn-edit {
-            background-color: #ffc107;
-            color: white;
-            margin-right: 5px;
-        }
-
-        .btn-delete {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>@ViewData["Title"]</h1>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fa-solid fa-plus me-2"></i>Thêm khách hàng mới
+        </a>
+    </div>
 
-     
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Họ và tên</th>
-                    <th>Số điện thoại</th>
-                    <th>Email</th>
-                    <th>Tuổi</th>
-                    <th>Địa chỉ</th>
-                    <th>Giới tính</th>
-                    <th style="text-align:center;">Hành động</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model != null && Model.Any())
-                {
-                    foreach (var item in Model)
-                    {
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
                         <tr>
-                            <td>@item.FullName</td>
-                            <td>@item.PhoneNumber</td>
-                            <td>@item.Email</td>
-                            <td>@item.Age</td>
-                            <td>@item.Address</td>
-                            <td>@item.Gender</td>
-                            <td style="text-align:center;">
-                                <div class="action-buttons">
-                                    <a href="@Url.Action("Edit", "Customer", new { id = item.Id })" class="btn btn-edit">Sửa</a>
-                                    <form asp-action="DeleteDirect" method="post" style="display:inline;">
-                                        <input type="hidden" name="id" value="@item.Id" />
-                                        <button type="submit" class="btn btn-delete">Xóa</button>
-                                    </form>
-
-                                </div>
-                            </td>
+                            <th>@Html.DisplayNameFor(model => model.CustomerCode)</th>
+                            <th>@Html.DisplayNameFor(model => model.FullName)</th>
+                            <th>@Html.DisplayNameFor(model => model.PhoneNumber)</th>
+                            <th>@Html.DisplayNameFor(model => model.Email)</th>
+                            <th>@Html.DisplayNameFor(model => model.Status)</th>
+                            <th class="text-end" style="width: 150px;">Hành động</th>
                         </tr>
-                    }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="7" style="text-align:center; color:gray;">Không có dữ liệu</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        <div class="top-bar">
-            <a href="@Url.Action("Create", "Customer")" class="btn btn-add">+ Thêm khách hàng</a>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center">Chưa có khách hàng nào.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td><strong>@Html.DisplayFor(modelItem => item.CustomerCode)</strong></td>
+                                    <td>@Html.DisplayFor(modelItem => item.FullName)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.PhoneNumber)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.Email)</td>
+                                    <td>
+                                        @if (item.Status == CustomerStatus.Active)
+                                        {
+                                            <span class="badge bg-success">@Html.DisplayFor(modelItem => item.Status)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@Html.DisplayFor(modelItem => item.Status)</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info" title="Xem chi tiết"><i class="fa-solid fa-circle-info"></i></a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" title="Sửa"><i class="fa-solid fa-pen"></i></a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" title="Xóa"><i class="fa-solid fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</body>
-</html>
+</div>

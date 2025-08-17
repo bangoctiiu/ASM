@@ -1,133 +1,123 @@
 ﻿@model ASM.Models.Warehouse
 
 @{
-    ViewData["Title"] = "Tạo Kho hàng mới";
+    ViewData["Title"] = "Tạo Kho Hàng Mới";
 }
 
-<div class="container mt-4" style="max-width: 600px;">
-    <h1>@ViewData["Title"]</h1><hr />
-    <form asp-action="Create">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-        <div class="mb-3">
-            <label asp-for="Name" class="form-label"></label>
-            <input asp-for="Name" class="form-control" />
-            <span asp-validation-for="Name" class="text-danger"></span>
-        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Code" class="form-label"></label>
+                                <input asp-for="Code" class="form-control" readonly style="background-color: #e9ecef;" />
+                                <input type="hidden" asp-for="Code" />
+                                <span asp-validation-for="Code" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Name" class="form-label"></label>
+                                <input asp-for="Name" class="form-control" placeholder="Ví dụ: Kho trung tâm Sài Gòn" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                        </div>
 
-        <div class="mb-3">
-            <label asp-for="Location" class="form-label">Địa chỉ kho</label>
-            <input asp-for="Location" class="form-control" placeholder="Nhập địa chỉ cụ thể" />
-            <span asp-validation-for="Location" class="text-danger"></span>
-        </div>
+                        <hr />
+                        <h5>Thông tin địa chỉ</h5>
 
-        <div class="mb-3">
-            <label asp-for="MapCoordinates" class="form-label">Vị trí kho (Google Maps)</label>
-            <input asp-for="MapCoordinates" id="MapCoordinates" class="form-control" placeholder="Chọn trên bản đồ" readonly />
-            <div id="map" style="height: 300px; margin-top: 10px; border: 1px solid #ccc;"></div>
-            <span asp-validation-for="MapCoordinates" class="text-danger"></span>
-        </div>
+                        <div class="mb-3">
+                            <label asp-for="Province" class="form-label"></label>
+                            <select asp-for="Province" class="form-control" id="provinceSelect">
+                                <option value="">-- Vui lòng chọn Tỉnh/Thành phố --</option>
+                            </select>
+                            <span asp-validation-for="Province" class="text-danger"></span>
+                        </div>
 
-        <div class="mb-3">
-            <label asp-for="Region" class="form-label">Miền</label>
-            <select asp-for="Region" class="form-control" id="regionSelect">
-                <option value="">-- Chọn miền --</option>
-                <option value="Bắc">Bắc</option>
-                <option value="Trung">Trung</option>
-                <option value="Nam">Nam</option>
-                <option value="Tây Nguyên">Tây Nguyên</option>
-            </select>
-        </div>
+                        <div class="mb-3">
+                            <label asp-for="District" class="form-label"></label>
+                            <select asp-for="District" class="form-control" id="districtSelect" disabled>
+                                <option value="">-- Vui lòng chọn Quận/Huyện --</option>
+                            </select>
+                            <span asp-validation-for="District" class="text-danger"></span>
+                        </div>
 
-        <div class="mb-3">
-            <label asp-for="Province" class="form-label">Tỉnh / Thành phố</label>
-            <select asp-for="Province" class="form-control" id="provinceSelect">
-                <option value="">-- Chọn tỉnh --</option>
-            </select>
-        </div>
+                        <div class="mb-3">
+                            <label asp-for="AddressLine1" class="form-label"></label>
+                            <input asp-for="AddressLine1" class="form-control" placeholder="Ví dụ: 123 Đường Lê Lợi, Phường Bến Thành" />
+                            <span asp-validation-for="AddressLine1" class="text-danger"></span>
+                        </div>
 
-        <div class="mb-3">
-            <label asp-for="District" class="form-label">Quận / Huyện</label>
-            <select asp-for="District" class="form-control" id="districtSelect">
-                <option value="">-- Chọn quận --</option>
-            </select>
-        </div>
+                        <hr />
+                        <h5>Thông tin liên hệ (không bắt buộc)</h5>
 
-        <div class="mb-3">
-            <button type="submit" class="btn btn-primary">Tạo mới</button>
-            <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ContactPerson" class="form-label"></label>
+                                <input asp-for="ContactPerson" class="form-control" placeholder="Ví dụ: Anh Nguyễn Văn A" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PhoneNumber" class="form-label"></label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="Ví dụ: 0909123456" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Tạo mới</button>
+                            <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
 </div>
 
 @section Scripts {
-    @await Html.PartialAsync("_ValidationScriptsPartial")
-
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDNI_ZWPqvdS6r6gPVO50I4TlYkfkZdXh8	"></script>
+    <partial name="_ValidationScriptsPartial" />
     <script>
-        let map, marker;
-        function initMap() {
-            map = new google.maps.Map(document.getElementById("map"), {
-                center: { lat: 21.028511, lng: 105.804817 }, // Hà Nội
-                zoom: 6
-            });
-
-            map.addListener("click", (e) => {
-                const lat = e.latLng.lat();
-                const lng = e.latLng.lng();
-                if (marker) {
-                    marker.setPosition(e.latLng);
-                } else {
-                    marker = new google.maps.Marker({
-                        position: e.latLng,
-                        map: map
-                    });
-                }
-                document.getElementById("MapCoordinates").value = lat + "," + lng;
-            });
-        }
-        window.onload = initMap;
-    </script>
-
-    <script>
-        const regionData = {
-            "Bắc": {
-                "Hà Nội": ["Ba Đình", "Hoàn Kiếm", "Đống Đa"],
-                "Hải Phòng": ["Lê Chân", "Ngô Quyền", "Hồng Bàng"]
-            },
-            "Trung": {
-                "Đà Nẵng": ["Hải Châu", "Thanh Khê", "Liên Chiểu"],
-                "Huế": ["Thành phố Huế", "Hương Thủy"]
-            },
-            "Nam": {
-                "TP.HCM": ["Quận 1", "Quận 3", "Thủ Đức"],
-                "Cần Thơ": ["Ninh Kiều", "Bình Thủy"]
-            },
-            "Tây Nguyên": {
-                "Đắk Lắk": ["Buôn Ma Thuột", "Buôn Đôn"],
-                "Lâm Đồng": ["Đà Lạt", "Bảo Lộc"]
-            }
+        // Data Tỉnh/Huyện đầy đủ hơn
+        const addressData = {
+            "Hà Nội": ["Ba Đình", "Hoàn Kiếm", "Hai Bà Trưng", "Đống Đa", "Tây Hồ", "Cầu Giấy", "Thanh Xuân", "Hoàng Mai", "Long Biên", "Nam Từ Liêm", "Bắc Từ Liêm", "Hà Đông"],
+            "TP. Hồ Chí Minh": ["Quận 1", "Quận 3", "Quận 4", "Quận 5", "Quận 6", "Quận 7", "Quận 8", "Quận 10", "Quận 11", "Quận 12", "Bình Thạnh", "Gò Vấp", "Phú Nhuận", "Tân Bình", "Tân Phú", "Bình Tân", "Thành phố Thủ Đức"],
+            "Đà Nẵng": ["Hải Châu", "Thanh Khê", "Sơn Trà", "Ngũ Hành Sơn", "Liên Chiểu", "Cẩm Lệ", "Hòa Vang"],
+            "Hải Phòng": ["Hồng Bàng", "Ngô Quyền", "Lê Chân", "Hải An", "Kiến An", "Đồ Sơn", "Dương Kinh"],
+            "Cần Thơ": ["Ninh Kiều", "Bình Thủy", "Cái Răng", "Ô Môn", "Thốt Nốt"],
+            "Bình Dương": ["Thủ Dầu Một", "Dĩ An", "Thuận An", "Tân Uyên", "Bến Cát", "Bàu Bàng", "Phú Giáo", "Dầu Tiếng"],
+            "Đồng Nai": ["Biên Hòa", "Long Khánh", "Long Thành", "Nhơn Trạch", "Trảng Bom", "Vĩnh Cửu"],
+            "Bà Rịa - Vũng Tàu": ["Vũng Tàu", "Bà Rịa", "Phú Mỹ", "Châu Đức", "Xuyên Mộc"]
         };
 
-        document.getElementById('regionSelect').addEventListener('change', function () {
-            const provinceSelect = document.getElementById('provinceSelect');
-            const districtSelect = document.getElementById('districtSelect');
-            provinceSelect.innerHTML = '<option value="">-- Chọn tỉnh --</option>';
-            districtSelect.innerHTML = '<option value="">-- Chọn quận --</option>';
-            const provinces = regionData[this.value];
-            if (provinces) {
-                Object.keys(provinces).forEach(province => {
-                    provinceSelect.appendChild(new Option(province, province));
-                });
-            }
+        const provinceSelect = document.getElementById('provinceSelect');
+        const districtSelect = document.getElementById('districtSelect');
+
+        // 1. Tải danh sách Tỉnh/Thành phố khi trang được load
+        document.addEventListener('DOMContentLoaded', function() {
+            Object.keys(addressData).forEach(province => {
+                provinceSelect.add(new Option(province, province));
+            });
         });
 
-        document.getElementById('provinceSelect').addEventListener('change', function () {
-            const region = document.getElementById('regionSelect').value;
-            const districts = regionData[region]?.[this.value] || [];
-            const districtSelect = document.getElementById('districtSelect');
-            districtSelect.innerHTML = '<option value="">-- Chọn quận --</option>';
-            districts.forEach(d => districtSelect.appendChild(new Option(d, d)));
+        // 2. Khi chọn một Tỉnh/Thành phố
+        provinceSelect.addEventListener('change', function() {
+            districtSelect.innerHTML = '<option value="">-- Vui lòng chọn Quận/Huyện --</option>';
+            const selectedProvince = this.value;
+            if (selectedProvince) {
+                const districts = addressData[selectedProvince] || [];
+                districts.forEach(district => {
+                    districtSelect.add(new Option(district, district));
+                });
+                districtSelect.disabled = false;
+            } else {
+                districtSelect.disabled = true;
+            }
         });
     </script>
 }

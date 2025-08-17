@@ -1,57 +1,77 @@
 ﻿@model ASM.Models.ExportSlip
 
 @{
-    ViewData["Title"] = "Chi tiết phiếu xuất kho";
-    decimal totalValue = Model.ExportSlipDetails.Sum(d => d.Quantity * d.ExportPrice);
+    ViewData["Title"] = "Chi tiết Phiếu Xuất Kho";
+    // Tính toán tổng giá trị phiếu xuất
+    decimal totalValue = Model.ExportSlipDetails.Sum(d => d.Quantity * d.Price);
 }
 
-<div class="container mt-5 d-flex justify-content-center">
-    <div class="card shadow border-0" style="width: 100%; max-width: 900px;">
-        <div class="card-header bg-info text-white">
-            <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>@ViewData["Title"] - Mã phiếu #@Model.Id.ToString("D6")</h4>
-        </div>
-        <div class="card-body p-4">
-            <dl class="row">
-                <dt class="col-sm-3">Ngày xuất:</dt>
-                <dd class="col-sm-9">@Model.ExportDate.ToString("dd/MM/yyyy HH:mm")</dd>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fa-solid fa-file-invoice me-2"></i>@ViewData["Title"] - Mã: @Model.ExportSlipCode
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <h5>Thông tin chung</h5>
+                    <hr />
+                    <dl class="row">
+                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.ExportSlipCode)</dt>
+                        <dd class="col-sm-9"><strong>@Html.DisplayFor(model => model.ExportSlipCode)</strong></dd>
 
-                <dt class="col-sm-3">Người tạo:</dt>
-                <dd class="col-sm-9">@Model.User?.FullName</dd>
+                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.ExportDate)</dt>
+                        <dd class="col-sm-9">@Model.ExportDate.ToString("dd/MM/yyyy HH:mm")</dd>
 
-                <dt class="col-sm-3">Lý do:</dt>
-                <dd class="col-sm-9">@Model.Reason</dd>
-            </dl>
-            <hr />
-            <h5>Danh sách sản phẩm đã xuất</h5>
-            <table class="table table-bordered mt-3">
-                <thead class="table-light">
-                    <tr>
-                        <th>Sản phẩm</th>
-                        <th>Số lượng</th>
-                        <th>Đơn giá (VNĐ)</th>
-                        <th>Thành tiền (VNĐ)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var detail in Model.ExportSlipDetails)
-                    {
-                        <tr>
-                            <td>@detail.Product.Name</td>
-                            <td>@detail.Quantity</td>
-                            <td>@detail.ExportPrice.ToString("N0")</td>
-                            <td>@((detail.Quantity * detail.ExportPrice).ToString("N0"))</td>
-                        </tr>
-                    }
-                </tbody>
-                <tfoot>
-                    <tr class="fw-bold">
-                        <td colspan="3" class="text-end">Tổng giá trị phiếu xuất:</td>
-                        <td>@totalValue.ToString("N0")</td>
-                    </tr>
-                </tfoot>
-            </table>
-            <div class="d-flex justify-content-end mt-4">
-                <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Quay lại danh sách</a>
+                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Customer)</dt>
+                        <dd class="col-sm-9">@Model.Customer?.FullName (@Model.Customer?.CustomerCode)</dd>
+
+                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.User)</dt>
+                        <dd class="col-sm-9">@Model.User?.FullName</dd>
+
+                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Reason)</dt>
+                        <dd class="col-sm-9">@Html.DisplayFor(model => model.Reason)</dd>
+                    </dl>
+
+                    <h5 class="mt-4">Chi tiết sản phẩm</h5>
+                    <hr />
+                    <div class="table-responsive">
+                        <table class="table table-bordered mt-3">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th class="text-end">Số lượng</th>
+                                    <th class="text-end">Đơn giá (VNĐ)</th>
+                                    <th class="text-end">Thành tiền (VNĐ)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detail in Model.ExportSlipDetails)
+                                {
+                                    <tr>
+                                        <td>@detail.Product.Name</td>
+                                        <td class="text-end">@detail.Quantity</td>
+                                        <td class="text-end">@detail.Price.ToString("N0")</td>
+                                        <td class="text-end">@((detail.Quantity * detail.Price).ToString("N0"))</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold table-group-divider">
+                                    <td colspan="3" class="text-end">Tổng giá trị phiếu xuất:</td>
+                                    <td class="text-end fs-5">@totalValue.ToString("N0")</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+                    </a>
+                </div>
             </div>
         </div>
     </div>

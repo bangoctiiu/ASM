@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ASM.Models
 {
@@ -7,21 +6,32 @@ namespace ASM.Models
     {
         public int Id { get; set; }
 
-        [Required]
-        [StringLength(150)]
+        [ScaffoldColumn(false)] // không render trong form
+        [Display(Name = "Mã kho")]
+        public string Code { get; set; }
+
+
+        [Required(ErrorMessage = "Tên kho là bắt buộc.")]
+        [Display(Name = "Tên kho")]
         public string Name { get; set; }
 
-        [StringLength(250)]
-        public string? Location { get; set; } // Địa chỉ kho (cụ thể)
+        [Required(ErrorMessage = "Địa chỉ chi tiết là bắt buộc.")]
+        [Display(Name = "Địa chỉ chi tiết (Số nhà, đường, phường/xã)")]
+        public string AddressLine1 { get; set; }
 
-        public string? Region { get; set; } // Bắc, Trung, Nam, Tây Nguyên
-        public string? Province { get; set; } // Tỉnh/Thành phố
-        public string? District { get; set; } // Quận/Huyện
+        [Required(ErrorMessage = "Tỉnh/Thành phố là bắt buộc.")]
+        [Display(Name = "Tỉnh / Thành phố")]
+        public string Province { get; set; }
 
-        [StringLength(500)]
-        public string? MapCoordinates { get; set; } // Lưu lat,lng từ Google Maps
+        [Required(ErrorMessage = "Quận/Huyện là bắt buộc.")]
+        [Display(Name = "Quận / Huyện")]
+        public string District { get; set; }
 
-        public ICollection<Product> Products { get; set; } = new List<Product>();
+        [Display(Name = "Người liên hệ")]
+        public string? ContactPerson { get; set; }
+
+        [Display(Name = "Số điện thoại")]
+        [Phone(ErrorMessage = "Số điện thoại không hợp lệ.")]
+        public string? PhoneNumber { get; set; }
     }
-
 }

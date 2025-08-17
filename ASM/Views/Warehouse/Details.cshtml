@@ -1,22 +1,21 @@
 ﻿@model ASM.Models.Warehouse
 
 @{
-    ViewData["Title"] = "Xác nhận xóa Kho hàng";
+    ViewData["Title"] = "Chi tiết Kho hàng";
 }
 
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card border-danger">
-                <div class="card-header bg-danger text-white">
-                    <h3 class="card-title mb-0">@ViewData["Title"]</h3>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
                 </div>
                 <div class="card-body">
-                    <p class="lead">Bạn có chắc chắn muốn xóa vĩnh viễn kho hàng này không? Hành động này không thể hoàn tác.</p>
+                    <h4>Thông tin chi tiết của kho: @Model.Name</h4>
                     <hr />
 
-                    <h4>Thông tin chi tiết kho hàng:</h4>
-                    <dl class="row mt-3">
+                    <dl class="row">
                         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Code)</dt>
                         <dd class="col-sm-8">@Html.DisplayFor(model => model.Code)</dd>
 
@@ -34,12 +33,12 @@
                         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.PhoneNumber)</dt>
                         <dd class="col-sm-8">@Html.DisplayFor(model => model.PhoneNumber)</dd>
                     </dl>
-
-                    <form asp-action="Delete" class="mt-4">
-                        <input type="hidden" asp-for="Id" />
-                        <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash-can me-2"></i>Xác nhận Xóa</button>
-                        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
-                    </form>
+                </div>
+                <div class="card-footer text-end">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="fa-solid fa-pen me-2"></i>Sửa
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
                 </div>
             </div>
         </div>
