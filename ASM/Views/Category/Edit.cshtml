@@ -1,41 +1,70 @@
 ﻿@model ASM.Models.Category
 
 @{
-    ViewData["Title"] = "Chỉnh sửa Danh mục";
-    var allowedCategories = new List<string>
-    {
-        "Bút",
-        "Vở và giấy",
-        "Đồ dùng học sinh",
-        "Họa phẩm",
-        "Sách và tài liệu",
-        "Máy tính",
-                "test"
-
-    };
+    ViewData["Title"] = "Chỉnh Sửa Danh Mục";
 }
 
-<div class="container mt-4" style="max-width: 600px;">
-    <h1>@ViewData["Title"]</h1><hr />
-    <form asp-action="Edit">
-        <input type="hidden" asp-for="Id" />
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <div class="mb-3">
-            <label asp-for="Name" class="form-label"></label>
-            <select asp-for="Name" class="form-control">
-                <option value="">-- Chọn danh mục --</option>
-                @foreach (var name in allowedCategories)
-                {
-                    <option value="@name" selected="@(Model.Name == name)">
-                        @name
-                    </option>
-                }
-            </select>
-            <span asp-validation-for="Name" class="text-danger"></span>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">@ViewData["Title"]: @Model.Name</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit">
+                        @* Thẻ input ẩn để gửi Id và CreatedAt về Controller *@
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="CreatedAt" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- Tên Danh Mục -->
+                        <div class="form-group mb-3">
+                            <label asp-for="Name" class="control-label fw-bold"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <!-- Mô Tả -->
+                        <div class="form-group mb-3">
+                            <label asp-for="Description" class="control-label fw-bold"></label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <!-- Trạng Thái Hoạt Động -->
+                        <div class="form-group form-check mb-4">
+                            <input class="form-check-input" type="checkbox" asp-for="IsActive" />
+                            <label class="form-check-label" asp-for="IsActive">
+                                @Html.DisplayNameFor(model => model.IsActive)
+                            </label>
+                        </div>
+
+                        <!-- Thông tin ngày tạo/cập nhật (chỉ xem) -->
+                        <div class="mb-3 p-3 bg-light rounded border">
+                            <p class="mb-1"><small><strong>Ngày tạo:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small></p>
+                            <p class="mb-0"><small><strong>Cập nhật lần cuối:</strong> @Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</small></p>
+                        </div>
+
+                        <!-- Nút bấm -->
+                        <div class="form-group d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay Lại
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Lưu Thay Đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-            <button type="submit" class="btn btn-primary">Lưu</button>
-            <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
-        </div>
-    </form>
+    </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

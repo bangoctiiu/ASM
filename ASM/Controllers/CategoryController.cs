@@ -3,29 +3,16 @@ using ASM.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace ASM.Controllers
 {
-    [Authorize(Roles = "Admin")] // CHỈ ADMIN MỚI CÓ QUYỀN TRUY CẬP
+    [Authorize(Roles = "Admin")] // Chỉ Admin mới có quyền truy cập
     public class CategoryController : Controller
     {
         private readonly AppDbContext _context;
-
-        // Danh sách danh mục hợp lệ
-        private readonly List<string> allowedCategories = new List<string>
-        {
-            "Bút",
-            "Vở và giấy",
-            "Đồ dùng học sinh",
-            "Họa phẩm",
-            "Sách và tài liệu",
-            "Máy tính",
-                        "test"
-
-        };
 
         public CategoryController(AppDbContext context)
         {
@@ -35,7 +22,31 @@ namespace ASM.Controllers
         // GET: /Category
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Categories.ToListAsync());
+            // Chỉ hiển thị các danh mục đang hoạt động, sắp xếp theo lần cập nhật gần nhất
+            var activeCategories = await _context.Categories
+                                                 .Where(c => c.IsActive)
+                                                 .OrderByDescending(c => c.UpdatedAt)
+                                                 .ToListAsync();
+            return View(activeCategories);
+        }
+
+        // GET: /Category/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
         }
 
         // GET: /Category/Create
@@ -47,18 +58,24 @@ namespace ASM.Controllers
         // POST: /Category/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
+        public async Task<IActionResult> Create([Bind("Name,Description,IsActive")] Category category)
         {
-            if (!allowedCategories.Contains(category.Name))
+            // Loại bỏ khoảng trắng thừa ở đầu và cuối chuỗi
+            category.Name = category.Name.Trim();
+
+            if (await _context.Categories.AnyAsync(c => c.Name.ToLower() == category.Name.ToLower()))
             {
-                ModelState.AddModelError("Name", "Chỉ được chọn các danh mục có sẵn.");
+                ModelState.AddModelError("Name", "Tên danh mục này đã tồn tại.");
             }
 
             if (ModelState.IsValid)
             {
+                category.CreatedAt = DateTime.Now;
+                category.UpdatedAt = DateTime.Now;
+
                 _context.Add(category);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Tạo danh mục thành công!";
+                TempData["SuccessMessage"] = $"Tạo danh mục '{category.Name}' thành công!";
                 return RedirectToAction(nameof(Index));
             }
             return View(category);
@@ -76,26 +93,37 @@ namespace ASM.Controllers
         // POST: /Category/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category category)
+        // Loại bỏ CreatedAt khỏi Bind để tránh tấn công overposting
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,IsActive")] Category category)
         {
             if (id != category.Id) return NotFound();
 
-            if (!allowedCategories.Contains(category.Name))
+            category.Name = category.Name.Trim();
+
+            if (await _context.Categories.AnyAsync(c => c.Name.ToLower() == category.Name.ToLower() && c.Id != id))
             {
-                ModelState.AddModelError("Name", "Chỉ được chọn các danh mục có sẵn.");
+                ModelState.AddModelError("Name", "Tên danh mục này đã tồn tại.");
             }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(category);
+                    var existingCategory = await _context.Categories.FindAsync(id);
+                    if (existingCategory == null) return NotFound();
+
+                    existingCategory.Name = category.Name;
+                    existingCategory.Description = category.Description;
+                    existingCategory.IsActive = category.IsActive;
+                    existingCategory.UpdatedAt = DateTime.Now;
+
+                    _context.Update(existingCategory);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Cập nhật danh mục thành công!";
+                    TempData["SuccessMessage"] = $"Cập nhật danh mục '{category.Name}' thành công!";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_context.Categories.Any(e => e.Id == category.Id)) return NotFound();
+                    if (!CategoryExists(category.Id)) return NotFound();
                     else throw;
                 }
                 return RedirectToAction(nameof(Index));
@@ -118,23 +146,31 @@ namespace ASM.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var category = await _context.Categories
-                .Include(c => c.Products) // nạp danh sách sản phẩm liên quan
+                .Include(c => c.Products)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
-            if (category == null)
-                return NotFound();
+            if (category == null) return NotFound();
 
-            // Nếu vẫn còn sản phẩm thì không cho xóa
+            // SỬA LỖI: Quay lại kiểm tra xem có sản phẩm nào tồn tại không, thay vì kiểm tra IsActive
             if (category.Products.Any())
             {
-                TempData["ErrorMessage"] = "Không thể xóa danh mục này vì vẫn còn sản phẩm liên kết.";
+                TempData["ErrorMessage"] = $"Không thể xóa '{category.Name}' vì vẫn còn sản phẩm liên kết trong danh mục này.";
                 return RedirectToAction(nameof(Index));
             }
 
-            _context.Categories.Remove(category);
+            category.IsActive = false;
+            category.UpdatedAt = DateTime.Now;
+            _context.Update(category);
+
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Xóa danh mục thành công!";
+            TempData["SuccessMessage"] = $"Đã chuyển danh mục '{category.Name}' sang trạng thái không hoạt động.";
             return RedirectToAction(nameof(Index));
+        }
+
+        // Phương thức private để kiểm tra sự tồn tại của danh mục
+        private bool CategoryExists(int id)
+        {
+            return _context.Categories.Any(e => e.Id == id);
         }
     }
 }
